@@ -69,6 +69,7 @@ def chan_vase(image):
 
 file_list = glob(".../data/subset0/" + "*.mhd")
 
+
 # print file_list[0]
 for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)
