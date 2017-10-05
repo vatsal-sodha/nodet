@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from skimage import color, data, restoration
 from skimage import data, img_as_float
-from skimage.segmentation import chan_vese
+from skimage import segmentation
 from skimage.filters import sobel,roberts
 from scipy import ndimage as ndi
 from skimage import exposure
@@ -61,13 +61,13 @@ def getregionprops(image):
 
 def chan_vase(image):
     # Feel free to play around with the parameters to see how they impact the result
-    cv = chan_vese(image, mu=0.25, lambda1=1, lambda2=1, tol=1e-3, max_iter=200,
+    cv = segmentation.chan_vese(image, mu=0.25, lambda1=1, lambda2=1, tol=1e-3, max_iter=200,
                dt=0.5, init_level_set="checkerboard", extended_output=True)
 
     return cv[0]
 
 
-file_list = glob("../data/subset0/" + "*.mhd")
+file_list = glob("../../subset0/" + "*.mhd")
 
 # print file_list[0]
 for img_file in file_list[0:1]:
