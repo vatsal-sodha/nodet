@@ -67,7 +67,7 @@ def minimumSegmentation(img):
 	minimum=morphology.erosion(minimum,np.ones([4,4]))
 	return minimum
 
-file_list = glob("../../subset0/" + "*.mhd")
+file_list = glob("../data/subset0/" + "*.mhd")
 # print(file_list)
 for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)
