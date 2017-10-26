@@ -67,12 +67,14 @@ def minimumSegmentation(img):
 	minimum=morphology.erosion(minimum,np.ones([4,4]))
 	return minimum
 
-file_list = glob("../../subset0/" + "*.mhd")
-# print(file_list)
+file_list = glob("../data/subset0/" + "*.mhd")
+
+#print(file_list)
 for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)
 	img_array=sitk.GetArrayFromImage(itk_img)
 	imgs_to_process=img_array.astype(np.float64)
+
 
 	for i in range(0,1):
 		img=imgs_to_process[100]
@@ -107,7 +109,7 @@ for img_file in file_list[0:1]:
 		plt.subplot(3,3,7)
 		plt.title("After Otsu segmentation")
 		plt.imshow(otsu,cmap="gray")
-
+		
 		mask=getregionprops(otsu)
 		img_fin=mask*img
 		plt.subplot(3,3,8)
