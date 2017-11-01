@@ -83,7 +83,7 @@ for img_file in file_list[0:1]:
 	imgs_to_process=img_array.astype(np.float64)
 
 	for i in range(0,1):
-		img=imgs_to_process[100]
+		img=imgs_to_process[68]
 		plt.subplot(2,2,1)
 		plt.title("Original Image")
 		plt.imshow(img,cmap="gray")
@@ -148,7 +148,8 @@ for img_file in file_list[0:1]:
 				y, x, r = blob
 				#c = plt.Circle((x, y), r, color=color, linewidth=2, fill=False)
 				#ax[idx].add_patch(c)
-				img2 = img[int(x)-50:int(x)+50,int(y)-50:int(y)+50]
+				frame_size = 25
+				img2 = img[int(x)-frame_size:int(x)+frame_size,int(y)-frame_size:int(y)+frame_size]
 				plt.imshow(img2,cmap="gray")
 				#print(img2.shape)
 				plt.show()
