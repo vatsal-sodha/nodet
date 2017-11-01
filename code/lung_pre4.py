@@ -83,7 +83,7 @@ for img_file in file_list[0:4]:
 
 
 	for i in range(0,1):
-		img=imgs_to_process[61]
+		img=imgs_to_process[68]
 		img1=img
 		plt.subplot(3,3,1)
 		plt.title("Original Image")
@@ -115,7 +115,7 @@ for img_file in file_list[0:4]:
 		otsu=OTSUsegmentation(medfilt)
 		plt.subplot(3,3,7)
 		plt.title("After Otsu segmentation")
-		plt.imshow(otsu,cmap="gray")
+		plt.imshow(otsu,cmap="gray")	
 		
 		mask=getregionprops(otsu)
 		img_fin=mask*img1
@@ -125,42 +125,43 @@ for img_file in file_list[0:4]:
 		
 		plt.show()
 
-		blobs_doh = blob_doh(img_fin, max_sigma=30, threshold=.01)
+		blobs_doh = blob_doh(img_fin, max_sigma=30, threshold=0.01)
 
 		blobs_list = [blobs_doh]
 		colors = ['red']
 		titles = ['Determinant of Hessian']
 		sequence = zip(blobs_list, colors, titles)
 
-		#fig, axes = plt.subplots(1, 2, figsize=(9, 3), sharex=True, sharey=True,subplot_kw={'adjustable': 'box-forced'})
-		#ax = axes.ravel()
+		fig, axes = plt.subplots(1, 2, figsize=(9, 3), sharex=True, sharey=True,subplot_kw={'adjustable': 'box-forced'})
+		ax = axes.ravel()
 
 
 		#plt.imshow(img)
 		#plt.show()
 		for idx, (blobs, color, title) in enumerate(sequence):
-			#ax[idx].set_title(title)
-			#ax[idx].imshow(img_fin, interpolation='nearest')
+			ax[idx].set_title(title)
+			ax[idx].imshow(img_fin, interpolation='nearest')
 			print(blobs.shape)
 			for blob in blobs:
 				y, x, r = blob
-				#c = plt.Circle((x, y), r, color=color, linewidth=2, fill=False)
-				#ax[idx].add_patch(c)
-				#if x in range(170,195) and y in range(350,370):
-				print(x)
-				print(y)
-				print(r)
-				temp=x
-				x=y
-				y=temp
-				print(img_fin.shape)
-				img2 = img_fin[int(x)-40:int(x)+40,int(y)-40:int(y)+40]
-				plt.imshow(img2,cmap="gray")
-				plt.show()
-			#ax[idx].set_axis_off()
+				if x>80 and x<412 and y>80 and y<400:
+					c = plt.Circle((x, y), r, color=color, linewidth=2, fill=False)
+					ax[idx].add_patch(c)
+				# if x in range(415,430) and y in range(270,295):
+				# 	print(x)
+				# 	print(y)
+				# 	print(r)
+				# 	temp=x
+				# 	x=y
+				# 	y=temp
+				# 	print(img_fin.shape)
+				# 	img2 = img_fin[int(x)-40:int(x)+40,int(y)-40:int(y)+40]
+				# 	plt.imshow(img2,cmap="gray")
+				# 	plt.show()
+			ax[idx].set_axis_off()
 
-		#plt.tight_layout()
-		#plt.show()
+		plt.tight_layout()
+		plt.show()
 
 
 
