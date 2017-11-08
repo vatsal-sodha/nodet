@@ -19,6 +19,9 @@ from skimage import data
 from skimage.feature import blob_dog, blob_log, blob_doh
 from skimage.color import rgb2gray
 
+from scipy.ndimage.morphology import binary_fill_holes
+import math
+
 def getregionprops(image):
     labels = measure.label(image)
 
@@ -30,6 +33,8 @@ def getregionprops(image):
     good_labels = []
     for prop in regions:
         B = prop.bbox
+        print(B)
+        print("     ")
         if B[2]-B[0]<475 and B[3]-B[1]<475 and B[0]>40 and B[2]<472:
             good_labels.append(prop.label)
 
@@ -39,7 +44,7 @@ def getregionprops(image):
     for N in good_labels:
         mask = mask + np.where(labels==N,1,0)
 
-    #mask = morphology.dilation(mask,np.ones([10,10])) # one last dilation
+    mask = morphology.dilation(mask,np.ones([5,5])) # one last dilation
     return mask
 
 def normalising0to1(img):
@@ -60,10 +65,10 @@ def medianFilter(img):
 
 def OTSUsegmentation(img):
 	thresh=filters.threshold_otsu(img)
-	otsu=img>thresh
-	otsu=morphology.erosion(otsu,np.ones([6,6]))
-	otsu=morphology.dilation(otsu)
-	otsu=np.where(otsu==1,0,1)
+	otsu=img<thresh
+	otsu=morphology.erosion(otsu,np.ones([7,7]))
+	#otsu=morphology.dilation(otsu,np.ones([4,4]))
+	#otsu=np.where(otsu==1,0,1)
 	return otsu
 
 def minimumSegmentation(img):
@@ -76,91 +81,112 @@ def minimumSegmentation(img):
 file_list = glob("../data/subset0/" + "*.mhd")
 
 #print(file_list)
-for img_file in file_list[0:4]:
+for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)
 	img_array=sitk.GetArrayFromImage(itk_img)
 	imgs_to_process=img_array.astype(np.float64)
 
 
 	for i in range(0,1):
-		img=imgs_to_process[68]
-		img1=img
-		plt.subplot(3,3,1)
+		img=imgs_to_process[150]
+		plt.subplot(4,3,1)
 		plt.title("Original Image")
 		plt.imshow(img,cmap="gray")
 
 		img=normalising0to1(img)
-		plt.subplot(3,3,2)
+		normalised_image=img
+		plt.subplot(4,3,2)
 		plt.title("Normalised image")
 		plt.imshow(img,cmap="gray")
 
-		plt.subplot(3,3,3)
+		plt.subplot(4,3,3)
 		plotHistogram(img)
 		plt.title("Original Image")
 
 		eq=equalize_hist(img)
-		plt.subplot(3,3,4)
+		plt.subplot(4,3,4)
 		plt.title("Histogram equlised image")
 		plt.imshow(eq,cmap="gray")
 
-		plt.subplot(3,3,5)
+		plt.subplot(4,3,5)
 		plotHistogram(eq)
 		plt.title("After equalisation")
 
 		medfilt=medianFilter(eq)
-		plt.subplot(3,3,6)
+		plt.subplot(4,3,6)
 		plt.title("After median filter")
 		plt.imshow(medfilt,cmap="gray")
 
 		otsu=OTSUsegmentation(medfilt)
-		plt.subplot(3,3,7)
+		plt.subplot(4,3,7)
 		plt.title("After Otsu segmentation")
 		plt.imshow(otsu,cmap="gray")	
 		
 		mask=getregionprops(otsu)
-		img_fin=mask*img1
-		plt.subplot(3,3,8)
+		
+
+		plt.subplot(4,3,8)
+		plt.title("mask")
+		plt.imshow(mask,cmap="gray")
+
+		mask = binary_fill_holes(mask)
+		plt.subplot(4,3,9)
+		plt.title("After filling holes")
+		plt.imshow(mask,cmap="gray")
+
+		img_fin=mask*normalised_image
+		plt.subplot(4,3,10)
 		plt.title("final Image")
 		plt.imshow(img_fin,cmap="gray")
+
+		img_fin2=mask*medfilt
+		plt.subplot(4,3,11)
+		plt.title("final Image")
+		plt.imshow(img_fin2,cmap="gray")
+
+		plt.show()
+
+		plt.subplot(2,2,1)
+		plt.title("final Image")
+		plt.imshow(img_fin,cmap="gray")
+
+		plt.subplot(2,2,2)
+		plt.title("final Image")
+		plt.imshow(img_fin2,cmap="gray")
+
+		blur_radius = 1.0
+		threshold = 0.5
+
+		# smooth the image (to remove small objects)
+		imgf = ndimage.gaussian_filter(img_fin, blur_radius)
+		labeled, nr_objects = ndimage.label(imgf > threshold)
+		print("Number of objects is ",nr_objects)
+		plt.subplot(2,2,3)
+		plt.title("regions")
+		plt.imshow(labeled,cmap="gray")
+
+		# find connected components
+		imgf = ndimage.gaussian_filter(img_fin2, blur_radius)
+		labeled, nr_objects = ndimage.label(imgf > threshold) 
+		regions = measure.regionprops(labeled)
+		print("Number of objects is ",nr_objects)
+
+		plt.subplot(2,2,4)
+		plt.title("regions")
+		plt.imshow(labeled,cmap="gray")
 		
 		plt.show()
 
-		blobs_doh = blob_doh(img_fin, max_sigma=30, threshold=0.01)
+		fig, ax = plt.subplots()
+		ax.imshow(labeled, cmap="gray")
 
-		blobs_list = [blobs_doh]
-		colors = ['red']
-		titles = ['Determinant of Hessian']
-		sequence = zip(blobs_list, colors, titles)
+		for props in regions:
+		    minr, minc, maxr, maxc = props.bbox
+		    bx = (minc, maxc, maxc, minc, minc)
+		    by = (minr, minr, maxr, maxr, minr)
+		    ax.plot(bx, by, '-b', linewidth=1.5)
 
-		fig, axes = plt.subplots(1, 2, figsize=(9, 3), sharex=True, sharey=True,subplot_kw={'adjustable': 'box-forced'})
-		ax = axes.ravel()
-
-
-		#plt.imshow(img)
-		#plt.show()
-		for idx, (blobs, color, title) in enumerate(sequence):
-			ax[idx].set_title(title)
-			ax[idx].imshow(img_fin, interpolation='nearest')
-			print(blobs.shape)
-			for blob in blobs:
-				y, x, r = blob
-				if x>80 and x<412 and y>80 and y<400:
-					c = plt.Circle((x, y), r, color=color, linewidth=2, fill=False)
-					ax[idx].add_patch(c)
-				# if x in range(415,430) and y in range(270,295):
-				# 	print(x)
-				# 	print(y)
-				# 	print(r)
-				# 	temp=x
-				# 	x=y
-				# 	y=temp
-				# 	print(img_fin.shape)
-				# 	img2 = img_fin[int(x)-40:int(x)+40,int(y)-40:int(y)+40]
-				# 	plt.imshow(img2,cmap="gray")
-				# 	plt.show()
-			ax[idx].set_axis_off()
-
-		plt.tight_layout()
+		ax.axis((0, 512, 512, 0))
 		plt.show()
 
 
