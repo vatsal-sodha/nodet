@@ -21,6 +21,7 @@ from skimage.color import rgb2gray
 
 from scipy.ndimage.morphology import binary_fill_holes
 import math
+from skimage.filters import threshold_otsu
 
 def getregionprops(image):
     labels = measure.label(image)
@@ -82,13 +83,14 @@ file_list = glob("../data/subset0/" + "*.mhd")
 
 #print(file_list)
 for img_file in file_list[0:1]:
+	print(img_file)
 	itk_img=sitk.ReadImage(img_file)
 	img_array=sitk.GetArrayFromImage(itk_img)
 	imgs_to_process=img_array.astype(np.float64)
 
 
 	for i in range(0,1):
-		img=imgs_to_process[150]
+		img=imgs_to_process[215]
 		plt.subplot(4,3,1)
 		plt.title("Original Image")
 		plt.imshow(img,cmap="gray")
@@ -157,6 +159,12 @@ for img_file in file_list[0:1]:
 		blur_radius = 1.0
 		threshold = 0.5
 
+		thresh = threshold_otsu(img_fin)
+		print(thresh)
+
+		thresh = threshold_otsu(img_fin2)
+		print(thresh)
+
 		# smooth the image (to remove small objects)
 		imgf = ndimage.gaussian_filter(img_fin, blur_radius)
 		labeled, nr_objects = ndimage.label(imgf > threshold)
@@ -184,7 +192,16 @@ for img_file in file_list[0:1]:
 		    minr, minc, maxr, maxc = props.bbox
 		    bx = (minc, maxc, maxc, minc, minc)
 		    by = (minr, minr, maxr, maxr, minr)
+		    if (maxr-minr >50) or (maxc - minc > 50):
+		    	continue
 		    ax.plot(bx, by, '-b', linewidth=1.5)
+		    
+		    cy = (int) (minr + (maxr-minr)/2)
+		    cx = (int)(minc + (maxc-minc)/2)
+
+		    #crop=labeled[cy-25:cy+25,cx-25:cx+25]
+
+		    #ax.plot((cx-25,cx+25,cx+25,cx-25,cx-25),(cy-25,cy-25,cy+25,cy+25,cy-25),'-r',linewidth=2.0)
 
 		ax.axis((0, 512, 512, 0))
 		plt.show()
