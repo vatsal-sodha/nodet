@@ -7,7 +7,10 @@ import csv
 from glob import glob
 import pandas as pd
 
-file_list = glob("../data/subset0/" + "*.mhd")
+subset_number = 3
+subset_number = "subset"+str(subset_number)
+
+file_list = glob("../data/"+subset_number+"/" + "*.mhd")
 def get_filename(case):
     global file_list
     for f in file_list:
@@ -47,5 +50,6 @@ for img_file in file_list:
         
         nodules = nodules.append(mini_df)
 	    
-nodules.to_csv("../data/WorldToVoxel_subset0_candidates.csv", sep=',', encoding='utf-8')
+nodules.to_csv("../data/WorldToVoxel_"+subset_number+"_candidates.csv", sep=',', encoding='utf-8')
 
+print(subset_number+" done!")
