@@ -7,6 +7,9 @@ import numpy as np
 import csv
 from glob import glob
 import pandas as pd
+
+#import matplotlib
+#matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from skimage import color, data, restoration
 from skimage import data, img_as_float
@@ -67,7 +70,11 @@ def chan_vase(image):
     return cv[0]
 
 
+<<<<<<< HEAD
 file_list = glob("../../subset0/" + "*.mhd")
+=======
+file_list = glob("../data/subset0/" + "*.mhd")
+>>>>>>> master
 
 # print file_list[0]
 for img_file in file_list[0:1]:
@@ -116,6 +123,10 @@ for img_file in file_list[0:1]:
 		plt.title("final Image")
 		plt.imshow(img_fin,cmap="gray")
 		plt.show()
+<<<<<<< HEAD
+=======
+		#plt.savefig('myfilename.png')
+>>>>>>> master
         
 
 

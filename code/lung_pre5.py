@@ -60,6 +60,7 @@ def OTSUsegmentation(img):
 	otsu=morphology.dilation(otsu)
 	# black to white for better results in regionprops
 	otsu=np.where(otsu==1,0,1)
+
 	return otsu
 
 def minimumSegmentation(img):
@@ -67,11 +68,14 @@ def minimumSegmentation(img):
 	minimum=img>thresh
 	minimum=morphology.dilation(minimum)
 	minimum=morphology.erosion(minimum,np.ones([4,4]))
+
 	# black to white for better results in regionprops
 	minimum=np.where(minimum==1,0,1)
 	return minimum
 
-file_list = glob("../../subset0/" + "*.mhd")
+
+file_list = glob("../data/subset0/" + "*.mhd")
+
 # print(file_list)
 for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)

@@ -67,7 +67,8 @@ def chan_vase(image):
     return cv[0]
 
 
-file_list = glob("../../subset0/" + "*.mhd")
+
+file_list = glob(".../data/subset0/" + "*.mhd")
 
 # print file_list[0]
 for img_file in file_list[0:1]:
