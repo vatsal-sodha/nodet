@@ -29,7 +29,7 @@ def normalising0to1(img):
     img=img/range1
     return img
 
-def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_93273_134671.jpg"):
+def getRegionMetricRow(fname = "../data0/subset0_candidates/subset0_positive_93273_134671.jpg"):
     seg = load_image(fname)
     seg = normalising0to1(seg)
     plt.title("Image after normalising0to1")

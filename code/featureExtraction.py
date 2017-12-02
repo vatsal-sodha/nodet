@@ -29,14 +29,24 @@ def normalising0to1(img):
     img=img/range1
     return img
 
-def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_93273_134671.jpg"):
+def getRegionMetricRow(fname = "../../data0/subset0_candidates/subset0_positive_93273_134671.jpg"):
     seg = load_image(fname)
     seg = normalising0to1(seg)
-    plt.title("Image after normalising0to1")
-    plt.imshow(seg,cmap="gray")
+    # plt.title("Image after normalising0to1")
+    # plt.imshow(seg,cmap="gray")
         
-    plt.show()
+    # plt.show()
     #metrics
+    #path should be in the form of ../../data0/subset0_candidates/subset0_positive_93273_134671.jpg
+    f1=fname.split("/")
+    fileName="".join(f1[4])
+    f2=f1[4].split("_")
+    classLabel=f2[1]
+    if classLabel == "positive":
+    	classLabel=1
+    elif classLabel == "negative":
+    	classLabel=0
+    	
     totalArea = 0.
     avgArea = 0.
     maxArea = 0.
@@ -70,8 +80,12 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_9327
     avgEquivlentDiameter = avgEquivlentDiameter / numNodes
     stdEquivlentDiameter = np.std(eqDiameters)
     maxArea = max(areas)
-    return np.array([avgArea,maxArea,avgEcc,avgEquivlentDiameter, 
-        stdEquivlentDiameter, weightedX, weightedY, numNodes])
+    list1=[fileName,avgArea,maxArea,avgEcc,avgEquivlentDiameter, 
+        stdEquivlentDiameter, weightedX, weightedY,classLabel]
+    #exclude numNode feature
+    return list1
+    # return np.array([fileName,avgArea,maxArea,avgEcc,avgEquivlentDiameter, 
+        # stdEquivlentDiameter, weightedX, weightedY,classLabel])
 
 
 
@@ -92,17 +106,17 @@ def getRegionFromMap(slice_npy):
 
     imgf = ndimage.gaussian_filter(slice_npy, blur_radius)
 
-    plt.title("after gaussian_filter")
-    plt.imshow(imgf,cmap="gray")
-    plt.show()
+    # plt.title("after gaussian_filter")
+    # plt.imshow(imgf,cmap="gray")
+    # plt.show()
 
     labeled, nr_objects = ndimage.label(imgf > threshold)
     print("no of objects", nr_objects)
     regions = measure.regionprops(labeled)
 
-    plt.title("regions")
-    plt.imshow(labeled,cmap="gray")
-    plt.show()
+    # plt.title("regions")
+    # plt.imshow(labeled,cmap="gray")
+    # plt.show()
 
     return regions
 
