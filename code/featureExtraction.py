@@ -49,6 +49,7 @@ def normalising0to1(img):
     img=img/range1
     return img
 
+<<<<<<< HEAD
 def medianFilter(img):
 	 img=ndimage.median_filter(img,3)
 	 return img
@@ -172,8 +173,6 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_1211
 	return ([fileName, totalArea,Ecc,EquivlentDiameter, weightedX, weightedY, Rectangularity, 
 		MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
 
-
-
 def getRegionFromMap(slice_npy):
     #print("mean",np.mean(slice_npy))
     #thr = np.where(slice_npy > np.mean(slice_npy),0.,1.0)
@@ -207,6 +206,9 @@ def getRegionFromMap(slice_npy):
     # plt.show()
 
     #test(median)
+    # plt.title("after gaussian_filter")
+    # plt.imshow(imgf,cmap="gray")
+    # plt.show()
 
 
     labeled, nr_objects = ndimage.label(median > threshold)

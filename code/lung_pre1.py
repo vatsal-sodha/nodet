@@ -7,6 +7,10 @@ import numpy as np
 import csv
 from glob import glob
 import pandas as pd
+<<<<<<< HEAD
+=======
+
+>>>>>>> vatsal
 #import matplotlib
 #matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -71,6 +75,7 @@ def chan_vase(image):
 
 file_list = glob("../data/subset0/" + "*.mhd")
 
+
 # print file_list[0]
 for img_file in file_list[0:1]:
 	itk_img=sitk.ReadImage(img_file)
@@ -118,7 +123,14 @@ for img_file in file_list[0:1]:
 		plt.title("final Image")
 		plt.imshow(img_fin,cmap="gray")
 		plt.show()
+<<<<<<< HEAD
 		#plt.savefig('myfilename.png')
+=======
+<<<<<<< HEAD
+=======
+		#plt.savefig('myfilename.png')
+>>>>>>> master
+>>>>>>> vatsal
         
 
 

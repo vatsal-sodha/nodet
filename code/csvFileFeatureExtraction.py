@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from featureExtraction import getRegionMetricRow
 import os	
+<<<<<<< HEAD
 
 columns=['file_name','totalArea','Ecc','EquivlentDiameter', 'weightedX', 'weightedY', 'Rectangularity', 
 		'MeanIntensity', 'Circularity', 'Elongation', 'EulerNumber', 'Class']
@@ -22,7 +23,11 @@ featuresFileName="../data/subset0_features.csv"
 # def makeCsvHeader():
 	# df=pd.DataFrame([])
 	# df.to_csv("../data/features.csv",columns=columns)
-def writeToCSV(folder_path="../data/subset0_candidates/"):
+
+# def makeCsvHeader():
+	# df=pd.DataFrame([])
+	# df.to_csv("../data/features.csv",columns=columns)
+def writeToCSV(folder_path="../../data0/subset0_candidates/"):
 	file_list=glob(folder_path+"*.jpg")
 	# print(folder_path)
 	# features=np.empty()
@@ -31,7 +36,7 @@ def writeToCSV(folder_path="../data/subset0_candidates/"):
 	for f in file_list:
 		print(f)
 		feature=getRegionMetricRow(fname=f)
-		print(feature)
+		# print(feature)
 		features.append(feature)
 		# print(pd.Series(feature,index=columns))
 		# df.append(pd.Series(feature,index=columns),ignore_index=True)

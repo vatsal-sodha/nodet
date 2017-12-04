@@ -14,6 +14,11 @@ from glob import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> vatsal
 from math import sqrt
 from skimage import data
 from skimage.feature import blob_dog, blob_log, blob_doh
@@ -23,6 +28,10 @@ from scipy.ndimage.morphology import binary_fill_holes
 import math
 from skimage.filters import threshold_otsu
 
+<<<<<<< HEAD
+=======
+>>>>>>> master
+>>>>>>> vatsal
 def getregionprops(image):
     labels = measure.label(image)
 
@@ -34,8 +43,16 @@ def getregionprops(image):
     good_labels = []
     for prop in regions:
         B = prop.bbox
+<<<<<<< HEAD
         print(B)
         print("     ")
+=======
+<<<<<<< HEAD
+=======
+        print(B)
+        print("     ")
+>>>>>>> master
+>>>>>>> vatsal
         if B[2]-B[0]<475 and B[3]-B[1]<475 and B[0]>40 and B[2]<472:
             good_labels.append(prop.label)
 
@@ -45,7 +62,15 @@ def getregionprops(image):
     for N in good_labels:
         mask = mask + np.where(labels==N,1,0)
 
+<<<<<<< HEAD
     mask = morphology.dilation(mask,np.ones([5,5])) # one last dilation
+=======
+<<<<<<< HEAD
+    #mask = morphology.dilation(mask,np.ones([10,10])) # one last dilation
+=======
+    mask = morphology.dilation(mask,np.ones([5,5])) # one last dilation
+>>>>>>> master
+>>>>>>> vatsal
     return mask
 
 def normalising0to1(img):
@@ -66,6 +91,14 @@ def medianFilter(img):
 
 def OTSUsegmentation(img):
 	thresh=filters.threshold_otsu(img)
+<<<<<<< HEAD
+=======
+	otsu=img>thresh
+	otsu=morphology.erosion(otsu,np.ones([6,6]))
+	otsu=morphology.dilation(otsu)
+	# black to white for better results in regionprops
+	otsu=np.where(otsu==1,0,1)
+>>>>>>> vatsal
 	otsu=img<thresh
 	otsu=morphology.erosion(otsu,np.ones([7,7]))
 	#otsu=morphology.dilation(otsu,np.ones([4,4]))
@@ -77,9 +110,15 @@ def minimumSegmentation(img):
 	minimum=img>thresh
 	minimum=morphology.dilation(minimum)
 	minimum=morphology.erosion(minimum,np.ones([4,4]))
+
+	# black to white for better results in regionprops
+	minimum=np.where(minimum==1,0,1)
 	return minimum
 
-file_list = glob("../data/subset0/" + "*.mhd")
+
+file_list = glob("../../subset0/" + "*.mhd")
+# print(file_list)
+
 
 #print(file_list)
 for img_file in file_list[0:1]:
@@ -88,14 +127,15 @@ for img_file in file_list[0:1]:
 	img_array=sitk.GetArrayFromImage(itk_img)
 	imgs_to_process=img_array.astype(np.float64)
 
-
 	for i in range(0,1):
+
 		img=imgs_to_process[215]
 		plt.subplot(4,3,1)
 		plt.title("Original Image")
 		plt.imshow(img,cmap="gray")
 
 		img=normalising0to1(img)
+
 		normalised_image=img
 		plt.subplot(4,3,2)
 		plt.title("Normalised image")
@@ -106,6 +146,7 @@ for img_file in file_list[0:1]:
 		plt.title("Original Image")
 
 		eq=equalize_hist(img)
+	
 		plt.subplot(4,3,4)
 		plt.title("Histogram equlised image")
 		plt.imshow(eq,cmap="gray")
