@@ -18,11 +18,11 @@ import os
 
 columns=['file_name','totalArea','Ecc','EquivlentDiameter', 'weightedX', 'weightedY', 'Rectangularity', 
 		'MeanIntensity', 'Circularity', 'Elongation', 'EulerNumber', 'Class']
-featuresFileName="../data/subset0_features.csv"
+featuresFileName="../data/allSubsetsFeatures.csv"
 # def makeCsvHeader():
 	# df=pd.DataFrame([])
 	# df.to_csv("../data/features.csv",columns=columns)
-def writeToCSV(folder_path="../data/subset0_candidates/"):
+def writeToCSV(folder_path="../data/subset9_candidates/"):
 	file_list=glob(folder_path+"*.jpg")
 	# print(folder_path)
 	# features=np.empty()

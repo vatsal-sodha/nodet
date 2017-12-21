@@ -90,7 +90,7 @@ for img_file in file_list[0:1]:
 
 
 	for i in range(0,1):
-		img=imgs_to_process[215]
+		img=imgs_to_process[250]
 		plt.subplot(4,3,1)
 		plt.title("Original Image")
 		plt.imshow(img,cmap="gray")
@@ -194,7 +194,7 @@ for img_file in file_list[0:1]:
 		    by = (minr, minr, maxr, maxr, minr)
 		    if (maxr-minr >50) or (maxc - minc > 50):
 		    	continue
-		    ax.plot(bx, by, '-b', linewidth=1.5)
+		    ax.plot(bx, by, '-b', linewidth=2)
 		    
 		    cy = (int) (minr + (maxr-minr)/2)
 		    cx = (int)(minc + (maxc-minc)/2)

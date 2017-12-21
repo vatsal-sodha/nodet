@@ -53,12 +53,12 @@ def medianFilter(img):
 	 img=ndimage.median_filter(img,3)
 	 return img
 
-def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_12111_107806.jpg"):
+def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_41371_120532.jpg"):
 	seg = load_image(fname)
 	seg = normalising0to1(seg)
-	# plt.title("Image after normalising0to1")
-	# plt.imshow(seg,cmap="gray")    
-	# plt.show()
+	plt.title("Image after normalising0to1")
+	plt.imshow(seg,cmap="gray")    
+	plt.show()
 
 	#metrics
 	totalArea = 0.0
@@ -103,10 +103,11 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_1211
 
 	for region in regions:
 		B = region.bbox
+		print(region.area)
 		if region.label == required_label:
 			print(str(B[0])+" "+str(B[1])+" "+str(B[2])+" "+str(B[3])+" ")
 			#region should not have the area of 64x64 
-			if region.area>= 0.7*64*64:
+			if region.area>= 0.9*64*64:
 				break
 			
 			if B[0] == 0 or B[1] == 0 or B[2] == 64 or B[3]==64:
@@ -120,12 +121,15 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_1211
 				#img_fill_holes = ndimage.binary_fill_holes(km)
 				chull=convex_hull_image(km)
 				chull=morphology.erosion(chull,np.ones([3,3]))
+				plt.title("convex hull")
+				plt.imshow(chull,cmap="gray")
+				plt.show()
 
 				seg_nodule = segmented_region * chull
 				seg_nodule = morphology.dilation(seg_nodule, np.ones([2,2]))
-				# plt.title("segmented nodule")
-				# plt.imshow(seg_nodule,cmap="gray")
-				# plt.show()
+				plt.title("segmented nodule")
+				plt.imshow(seg_nodule,cmap="gray")
+				plt.show()
 
 				threshold = 0.44
 
@@ -202,9 +206,9 @@ def getRegionFromMap(slice_npy):
     #plt.show()
 
     median = medianFilter(imgf)
-    # plt.title("after median_filter")
-    # plt.imshow(median,cmap="gray")
-    # plt.show()
+    plt.title("after median_filter")
+    plt.imshow(median,cmap="gray")
+    plt.show()
 
     #test(median)
 
@@ -213,9 +217,9 @@ def getRegionFromMap(slice_npy):
     #print("no of objects", nr_objects)
     regions = measure.regionprops(labeled)
 
-    # plt.title("regions")
-    # plt.imshow(labeled,cmap="gray")
-    # plt.show()
+    plt.title("regions")
+    plt.imshow(labeled,cmap="gray")
+    plt.show()
 
     return regions, labeled, nr_objects
 
