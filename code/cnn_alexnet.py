@@ -25,19 +25,27 @@ def cnn_model_fn(features, labels, mode):
   input_layer = tf.reshape(features["x"], [-1, 64, 64, 1])
 
   # Convolutional Layer #1
-  conv1 = tf.layers.conv2d(inputs=input_layer,filters=32,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv1 = tf.layers.conv2d(inputs=input_layer,filters=64,kernel_size=[11, 11],strides=2,activation=tf.nn.relu)
 
   # Pooling Layer #1
-  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[3, 3], strides=2)
 
   # Convolutional Layer #2
-  conv2 = tf.layers.conv2d(inputs=pool1,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv2 = tf.layers.conv2d(inputs=pool1,filters=256,kernel_size=[5, 5],padding='SAME',activation=tf.nn.relu)
 
   # Pooling Layer #2
-  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+  pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[3, 3], strides=2)
+
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=384,kernel_size=[3, 3],padding='SAME',activation=tf.nn.relu)
+
+  conv4 = tf.layers.conv2d(inputs=conv3,filters=384,kernel_size=[3, 3],padding='SAME',activation=tf.nn.relu)
+
+  conv5 = tf.layers.conv2d(inputs=conv4,filters=256,kernel_size=[3, 3],padding='SAME',activation=tf.nn.relu)
+
+  pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[3, 3], strides=2)
 
   # Dense Layer
-  pool2_flat = tf.reshape(pool2, [-1, 16 * 16 * 64])
+  pool2_flat = tf.reshape(pool5, [-1, 2 * 2 * 256])
   dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
 
   # DropOut - To reduce Over Fitting of the data
@@ -115,7 +123,7 @@ def main(unused_argv):
   eval_labels = load_labels(1)
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet03_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_alexnet01_model")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -141,10 +149,6 @@ def main(unused_argv):
 
   eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
-<<<<<<< HEAD
-  confusion = tf.confusion_matrix(labels=eval_labels, predictions=eval_input_fn, num_classes=2)
-  print(confusion)
-=======
 
   eval_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={"x": train_data},
@@ -155,7 +159,6 @@ def main(unused_argv):
   eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
 
->>>>>>> d720eef9171538a246aa0469bae2ea035858e6a0
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
