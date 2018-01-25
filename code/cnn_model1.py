@@ -140,7 +140,8 @@ def main(unused_argv):
 
   eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
-
+  confusion = tf.confusion_matrix(labels=eval_labels, predictions=eval_input_fn, num_classes=2)
+  print(confusion)
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
