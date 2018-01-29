@@ -19,6 +19,8 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 # I took the following architecture from the Tensor Flow's CNN-MNIST tutorial as it worked well on MNIST dataset
 
+# ratio = 3
+
 def cnn_model_fn(features, labels, mode):
 
   # Input Layer
@@ -86,12 +88,26 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_data(j):
+
+  # total_pos = 1360
+  # total_neg = total_pos*ratio
+
+  # total = total_neg + total_pos
+
+
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_1to10_Data/*')
-    train_data = np.zeros((11658,4096))
+    # file_list = glob('../data/Simple_CNN_Data/Train_1to'+str(ratio)+'_Data/*')
+    file_list = glob('../data/Simple_CNN_Data/Train_OS_Data/*')
+
+    # train_data = np.zeros((int(total*0.8)-2,4096))
+    train_data = np.zeros((15238,4096))
+
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_1to10_Data/*')
-    train_data = np.zeros((3300,4096))
+    # file_list = glob('../data/Simple_CNN_Data/Test_1to'+str(ratio)+'_Data/*')
+    file_list = glob('../data/Simple_CNN_Data/Test_OS_Data/*')
+    # train_data = np.zeros((int(total*0.2),4096))
+    train_data = np.zeros((3800,4096))
+
 
   i = 0
   for img_file in file_list:
@@ -106,16 +122,20 @@ def load_data(j):
 #Loading the Train and Test labels that are prepared by me in the data_prep.py
 def load_labels(j):
   if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_1to10_Lables.csv')
+    # df = pd.read_csv('../data/Simple_CNN_Data/Train_1to'+str(ratio)+'_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Train_OS_Lables.csv')
+
   if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_1to10_Lables.csv')
+    # df = pd.read_csv('../data/Simple_CNN_Data/Test_1to'+str(ratio)+'_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Test_OS_Lables.csv')
+
   train_labels = df['Class'].tolist()
   train_labels = np.array(train_labels)
   return train_labels
 
 def getClasses(x):
   pred=[]
-  for i in range(x):
+  for i in range(len(x)):
     pred.append(x[i]['classes'])
   return pred
 
@@ -144,7 +164,7 @@ def main(unused_argv):
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=100,num_epochs=None,shuffle=True)
 
   # Classifier
-  nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
+  nodet_classifier.train(input_fn=train_input_fn,steps=2000,hooks=[logging_hook])
   eval_data = eval_data.astype(np.float32)
 
   # Test the classifier and print results
@@ -152,11 +172,14 @@ def main(unused_argv):
 
   eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
-  pred = nodet_classifier.predict(input_fn=eval_input_fn)
+  pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
 
-  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=pred, num_classes=2)
+  preds = getClasses(pred)
+  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
-  print(confusion)
+  with tf.Session():
+    print("Confusion: ",tf.Tensor.eval(confusion))
+
   eval_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={"x": train_data},
     y=train_labels,

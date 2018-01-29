@@ -16,7 +16,7 @@ import pandas as pd #Pandas is used to manipulate data frames
 
 #TensorFlow function to display information about the version and other details
 tf.logging.set_verbosity(tf.logging.INFO)
-
+ratio = 3
 # I took the following architecture from the Tensor Flow's CNN-MNIST tutorial as it worked well on MNIST dataset
 
 def cnn_model_fn(features, labels, mode):
@@ -35,12 +35,12 @@ def cnn_model_fn(features, labels, mode):
 
   # Pooling Layer #2
   pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
-  
+
   # DropOut - To reduce Over Fitting of the data
-  dropout = tf.layers.dropout(inputs=pool2, rate=0.3, training=mode == tf.estimator.ModeKeys.TRAIN) 
-  
+  dropout = tf.layers.dropout(inputs=pool2, rate=0.3, training=mode == tf.estimator.ModeKeys.TRAIN)
+
   # Convolutional Layer #2
-  conv3 = tf.layers.conv2d(inputs=pool2,filters=16,kernel_size=[3, 3],padding="same",activation=tf.nn.relu) 
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=16,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
   # Pooling Layer #2
   pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
   # Dense Layer
@@ -85,12 +85,16 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_data(j):
+  total_pos = 1360
+  total_neg = total_pos*ratio
+
+  total = total_neg + total_pos
   if j==0:
-    file_list = glob('Train_OS_Data/Train_OS_Data/*')
-    train_data = np.zeros((15238,4096))
+    file_list = glob('../data/Simple_CNN_Data/Train_1to'+str(ratio)+'_Data/*')
+    train_data = np.zeros((int(total*0.8)-2,4096))
   if j==1:
-    file_list = glob('Test_OS_Data/Test_OS_Data/*')
-    train_data = np.zeros((3800,4096))
+    file_list = glob('../data/Simple_CNN_Data/Test_1to'+str(ratio)+'_Data/*')
+    train_data = np.zeros((int(total*0.2),4096))
 
   i = 0
   for img_file in file_list:
@@ -105,9 +109,9 @@ def load_data(j):
 #Loading the Train and Test labels that are prepared by me in the data_prep.py
 def load_labels(j):
   if j==0:
-    df = pd.read_csv('Train_OS_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Train_1to'+str(ratio)+'_Lables.csv')
   if j==1:
-    df = pd.read_csv('Test_OS_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Test_1to'+str(ratio)+'_Lables.csv')
   train_labels = df['Class'].tolist()
   train_labels = np.array(train_labels)
   return train_labels
@@ -122,7 +126,7 @@ def main(unused_argv):
   eval_labels = load_labels(1)
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sod_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sod1_model")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -136,7 +140,7 @@ def main(unused_argv):
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=100,num_epochs=None,shuffle=True)
 
   # Classifier
-  nodet_classifier.train(input_fn=train_input_fn,steps=1000,hooks=[logging_hook])
+  nodet_classifier.train(input_fn=train_input_fn,steps=5000,hooks=[logging_hook])
   eval_data = eval_data.astype(np.float32)
 
   # Test the classifier and print results
