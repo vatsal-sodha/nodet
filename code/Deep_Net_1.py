@@ -160,7 +160,9 @@ def predict(X, parameters):
     
     sess = tf.Session()
     prediction = sess.run(p, feed_dict = {x: X})
-        
+    print('---------------\n',prediction)
+    print(type(prediction))
+    print(prediction['10'])
     return prediction
 
 #Forward Prop for prediction
@@ -182,7 +184,7 @@ def forward_propagation_for_predict(X, parameters):
     return Z3
 
 #Final Model
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 2000, minibatch_size = 32, print_cost = True):
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 100, minibatch_size = 32, print_cost = True):
    
     
     ops.reset_default_graph()        
@@ -245,8 +247,19 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
         # Calculate the correct predictions
         correct_prediction = tf.equal(tf.argmax(Z3), tf.argmax(Y))
 
+        print("--------------")
+        check = tf.contrib.util.constant_value(Z3)
+        print(check[100])
+
+        #with tf.Session():
+        #	print('Ze:', tf.Tensor.eval(tf.argmax(Z3)))
+
         # Calculate accuracy on the test set
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+        #with tf.Session():
+        #	print('Confusion Matrix:', tf.Tensor.eval(confusion))
+
 
         print("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
         print("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
