@@ -11,12 +11,12 @@ import numpy as np #Numpy for operations on n-dimensional arrays
 from shutil import copyfile #For copying the image files from one location to other
 from PIL import Image
 #Data frame is loaded from the features csv which is generated previously
-df = pd.read_csv('../data/sampled_data.csv')
+df = pd.read_csv('../data/allSubsetsFeatures.csv')
 
 print df['Class']
 
 df_neg = df[df['Class']==0]
-df_neg = df_neg.sample(n=9520)
+df_neg = df_neg.sample(n=13600)
 df_pos = df[df['Class']==1]
 
 print(len(df_pos))
@@ -26,12 +26,12 @@ df_neg = df_neg.sample(frac=1)
 df_pos = df_pos.sample(frac=1)
 
 #Train and Test Set - Negatives
-df_neg_train = df_neg[0:7620]
-df_neg_test = df_neg[7620:9520]
+df_neg_train = df_neg[0:10600]
+df_neg_test = df_neg[10600:13600]
 
 #Train and Test Set - Positives
-df_pos_train = df_pos[0:7620]
-df_pos_test = df_pos[7620:9520]
+df_pos_train = df_pos[0:1060]
+df_pos_test = df_pos[1060:1360]
 
 #Both are combined
 df_fin_train = pd.concat([df_pos_train,df_neg_train])
@@ -49,7 +49,7 @@ for i in df_fin_train['file_name']:
 	im = Image.open('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i)
 	width, height = im.size
 	if width==64 and height==64:
-		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/Simple_CNN_Data/Train_OS_Data/' + i)
+		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/Simple_CNN_Data/Train_1to10_Data/' + i)
 		print i
 	else:
 		df_fin_train = df_fin_train[df_fin_train.file_name != i]
@@ -59,11 +59,11 @@ for i in df_fin_test['file_name']:
 	im = Image.open('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i)
 	width, height = im.size
 	if width==64 and height==64:
-		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/Simple_CNN_Data/Test_OS_Data/' + i)
+		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/Simple_CNN_Data/Test_1to10_Data/' + i)
 		print i
 	else:
 		df_fin_test = df_fin_test[df_fin_test.file_name != i]
 
 #Names and Labels are stored in a new CSV files
-df_fin_train.to_csv('../data/Simple_CNN_Data/Train_OS_Lables.csv')
-df_fin_test.to_csv('../data/Simple_CNN_Data/Test_OS_Lables.csv')
+df_fin_train.to_csv('../data/Simple_CNN_Data/Train_1to10_Lables.csv')
+df_fin_test.to_csv('../data/Simple_CNN_Data/Test_1to10_Lables.csv')

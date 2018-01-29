@@ -87,11 +87,11 @@ def cnn_model_fn(features, labels, mode):
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_data(j):
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
-    train_data = np.zeros((2198,4096))
+    file_list = glob('../data/Simple_CNN_Data/Train_1to10_Data/*')
+    train_data = np.zeros((11658,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
-    train_data = np.zeros((520,4096))
+    file_list = glob('../data/Simple_CNN_Data/Test_1to10_Data/*')
+    train_data = np.zeros((3300,4096))
 
   i = 0
   for img_file in file_list:
@@ -106,12 +106,19 @@ def load_data(j):
 #Loading the Train and Test labels that are prepared by me in the data_prep.py
 def load_labels(j):
   if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Train_1to10_Lables.csv')
   if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Test_1to10_Lables.csv')
   train_labels = df['Class'].tolist()
   train_labels = np.array(train_labels)
   return train_labels
+
+def getClasses(x):
+  pred=[]
+  for i in range(x):
+    pred.append(x[i]['classes'])
+  return pred
+
 
 def main(unused_argv):
 
@@ -123,7 +130,7 @@ def main(unused_argv):
   eval_labels = load_labels(1)
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_alexnet01_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_alexnet1_model")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -137,19 +144,19 @@ def main(unused_argv):
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=100,num_epochs=None,shuffle=True)
 
   # Classifier
-  nodet_classifier.train(input_fn=train_input_fn,steps=5000,hooks=[logging_hook])
+  nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
   eval_data = eval_data.astype(np.float32)
 
   # Test the classifier and print results
-  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-    x={"x": eval_data},
-    y=eval_labels,
-    num_epochs=1,
-    shuffle=False)
+  eval_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": eval_data},y=eval_labels,num_epochs=1,shuffle=False)
 
   eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
+  pred = nodet_classifier.predict(input_fn=eval_input_fn)
 
+  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=pred, num_classes=2)
+
+  print(confusion)
   eval_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={"x": train_data},
     y=train_labels,
