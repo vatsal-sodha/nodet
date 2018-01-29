@@ -14,7 +14,9 @@ from PIL import Image
 df = pd.read_csv('../data/allSubsetsFeatures.csv')
 
 print df['Class']
-ratio = 3
+ratio = 2
+
+print(ratio)
 
 total_neg=1360*ratio
 total_pos=1360
