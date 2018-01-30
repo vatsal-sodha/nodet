@@ -51,10 +51,10 @@ def cnn_model_fn(features, labels, mode):
   dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
 
   # DropOut - To reduce Over Fitting of the data
-  dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+ # dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Final Layer - 2 Units - For nodules and non-nodules
-  logits = tf.layers.dense(inputs=dropout, units=2)
+  logits = tf.layers.dense(inputs=dense, units=2)
 
   # Predictions while training the data set
   predictions = {
