@@ -54,11 +54,11 @@ def load_labels(j):
 #Initialize Parameters - Weights and Bias through Xavier Initialization
 def initialize_parameters():
 
-    W1 = tf.get_variable("W1", [25, 4096], initializer = tf.contrib.layers.xavier_initializer())
-    b1 = tf.get_variable("b1", [25, 1], initializer = tf.zeros_initializer())
-    W2 = tf.get_variable("W2", [12, 25], initializer = tf.contrib.layers.xavier_initializer())
-    b2 = tf.get_variable("b2", [12, 1], initializer = tf.zeros_initializer())
-    W3 = tf.get_variable("W3", [2, 12], initializer = tf.contrib.layers.xavier_initializer())
+    W1 = tf.get_variable("W1", [5, 4096], initializer = tf.contrib.layers.xavier_initializer())
+    b1 = tf.get_variable("b1", [5, 1], initializer = tf.zeros_initializer())
+    W2 = tf.get_variable("W2", [5, 5], initializer = tf.contrib.layers.xavier_initializer())
+    b2 = tf.get_variable("b2", [5, 1], initializer = tf.zeros_initializer())
+    W3 = tf.get_variable("W3", [2, 5], initializer = tf.contrib.layers.xavier_initializer())
     b3 = tf.get_variable("b3", [2, 1], initializer = tf.zeros_initializer())
 
     parameters = {"W1": W1,
