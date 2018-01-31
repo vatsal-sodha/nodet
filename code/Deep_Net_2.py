@@ -54,20 +54,27 @@ def load_labels(j):
 #Initialize Parameters - Weights and Bias through Xavier Initialization
 def initialize_parameters():
 
-    W1 = tf.get_variable("W1", [5, 4096], initializer = tf.contrib.layers.xavier_initializer())
-    b1 = tf.get_variable("b1", [5, 1], initializer = tf.zeros_initializer())
-    W2 = tf.get_variable("W2", [5, 5], initializer = tf.contrib.layers.xavier_initializer())
-    b2 = tf.get_variable("b2", [5, 1], initializer = tf.zeros_initializer())
-    W3 = tf.get_variable("W3", [2, 5], initializer = tf.contrib.layers.xavier_initializer())
-    b3 = tf.get_variable("b3", [2, 1], initializer = tf.zeros_initializer())
+    W1 = tf.get_variable("W1", [256, 4096], initializer = tf.contrib.layers.xavier_initializer())
+    b1 = tf.get_variable("b1", [256, 1], initializer = tf.zeros_initializer())
+    W2 = tf.get_variable("W2", [128, 256], initializer = tf.contrib.layers.xavier_initializer())
+    b2 = tf.get_variable("b2", [128, 1], initializer = tf.zeros_initializer())
+    W3 = tf.get_variable("W3", [64, 128], initializer = tf.contrib.layers.xavier_initializer())
+    b3 = tf.get_variable("b3", [64, 1], initializer = tf.zeros_initializer())
+    W4 = tf.get_variable("W4", [32, 64], initializer = tf.contrib.layers.xavier_initializer())
+    b4 = tf.get_variable("b4", [32, 1], initializer = tf.zeros_initializer())
+    W5 = tf.get_variable("W5", [2, 32], initializer = tf.contrib.layers.xavier_initializer())
+    b5 = tf.get_variable("b5", [2, 1], initializer = tf.zeros_initializer())
 
     parameters = {"W1": W1,
                   "b1": b1,
                   "W2": W2,
                   "b2": b2,
                   "W3": W3,
-                  "b3": b3}
-
+                  "b3": b3,
+                  "W4": W4,
+                  "b4": b4,
+                  "W5": W5,
+                  "b5": b5}
     return parameters
 
 
@@ -82,6 +89,10 @@ def forward_propagation(X, parameters):
     b2 = parameters['b2']
     W3 = parameters['W3']
     b3 = parameters['b3']
+    W4 = parameters['W4']
+    b4 = parameters['b4']
+    W5 = parameters['W5']
+    b5 = parameters['b5']
 
     Z1 = tf.add(tf.matmul(W1, X), b1)                      # Z1 = np.dot(W1, X) + b1
     A1 = tf.nn.relu(Z1)                                    # A1 = relu(Z1)
@@ -89,7 +100,12 @@ def forward_propagation(X, parameters):
     A2 = tf.nn.relu(Z2)                                    # A2 = relu(Z2)
     Z3 = tf.add(tf.matmul(W3, A2), b3)                     # Z3 = np.dot(W3,Z2) + b3
 
-    return Z3
+    A3 = tf.nn.relu(Z3)                                    
+    Z4 = tf.add(tf.matmul(W4, A3), b4) 
+    A4 = tf.nn.relu(Z4)                                    
+    Z5 = tf.add(tf.matmul(W5, A4), b5) 
+
+    return Z5
 
 #Cost
 def compute_cost(Z3, Y):
@@ -145,13 +161,21 @@ def predict(X, parameters):
     b2 = tf.convert_to_tensor(parameters["b2"])
     W3 = tf.convert_to_tensor(parameters["W3"])
     b3 = tf.convert_to_tensor(parameters["b3"])
+    W4 = tf.convert_to_tensor(parameters["W4"])
+    b4 = tf.convert_to_tensor(parameters["b4"])
+    W5 = tf.convert_to_tensor(parameters["W5"])
+    b5 = tf.convert_to_tensor(parameters["b5"])
 
     params = {"W1": W1,
               "b1": b1,
               "W2": W2,
               "b2": b2,
               "W3": W3,
-              "b3": b3}
+              "b3": b3,
+              "W4": W4,
+              "b4": b4,
+              "W5": W5,
+              "b5": b5}
 
     x = tf.placeholder("float", [4096, 1])
 
@@ -174,12 +198,21 @@ def forward_propagation_for_predict(X, parameters):
     b2 = parameters['b2']
     W3 = parameters['W3']
     b3 = parameters['b3']
+    W4 = parameters['W4']
+    b4 = parameters['b4']
+    W5 = parameters['W5']
+    b5 = parameters['b5']
                                                            # Numpy Equivalents:
     Z1 = tf.add(tf.matmul(W1, X), b1)                      # Z1 = np.dot(W1, X) + b1
     A1 = tf.nn.relu(Z1)                                    # A1 = relu(Z1)
     Z2 = tf.add(tf.matmul(W2, A1), b2)                     # Z2 = np.dot(W2, a1) + b2
     A2 = tf.nn.relu(Z2)                                    # A2 = relu(Z2)
     Z3 = tf.add(tf.matmul(W3, A2), b3)                     # Z3 = np.dot(W3,Z2) + b3
+
+    A3 = tf.nn.relu(Z3)                                    
+    Z4 = tf.add(tf.matmul(W4, A3), b4) 
+    A4 = tf.nn.relu(Z4)                                    
+    Z5 = tf.add(tf.matmul(W5, A4), b5) 
 
     return Z3
 
@@ -254,7 +287,7 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
         print("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
         print("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
 
-        pred = tf.argmin(Z3)
+        pred = tf.argmax(Z3)
         pred = pred.eval({X: X_test})
         return parameters,pred
 
