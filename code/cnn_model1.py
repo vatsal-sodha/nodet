@@ -25,13 +25,13 @@ def cnn_model_fn(features, labels, mode):
   input_layer = tf.reshape(features["x"], [-1, 64, 64, 1])
 
   # Convolutional Layer #1
-  conv1 = tf.layers.conv2d(inputs=input_layer,filters=32,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv1 = tf.layers.conv2d(inputs=input_layer,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
 
   # Pooling Layer #1
-  # pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+  pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
 
   # Convolutional Layer #2
-  conv2 = tf.layers.conv2d(inputs=conv1,filters=32,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv2 = tf.layers.conv2d(inputs=pool1,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
 
   # Pooling Layer #2
   pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
@@ -40,18 +40,22 @@ def cnn_model_fn(features, labels, mode):
   #dropout = tf.layers.dropout(inputs=pool2, rate=0.3, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Convolutional Layer #2
-  #conv3 = tf.layers.conv2d(inputs=pool2,filters=16,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv3 = tf.layers.conv2d(inputs=pool2,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
   # Pooling Layer #2
-  #pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
+  # Convolutional Layer #4
+
+  conv4 = tf.layers.conv2d(inputs=pool3,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+
   # Dense Layer
-  pool2_flat = tf.reshape(pool2, [-1, 32 * 32 * 32])
-  dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
+  pool3_flat = tf.reshape(conv4, [-1, 8 * 8 * 64])
+  dense = tf.layers.dense(inputs=pool3_flat, units=4096, activation=tf.nn.relu)
 
   # DropOut - To reduce Over Fitting of the data
-  #dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+  dropout = tf.layers.dropout(inputs=dense, rate=0.5, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Final Layer - 2 Units - For nodules and non-nodules
-  logits = tf.layers.dense(inputs=dense, units=2)
+  logits = tf.layers.dense(inputs=dropout, units=2)
 
   # Predictions while training the data set
   predictions = {
@@ -87,11 +91,11 @@ def cnn_model_fn(features, labels, mode):
 def load_data(j):
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_OS_Data/*')
-    train_data = np.zeros((15238,4096))
+    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
+    train_data = np.zeros((2198,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_OS_Data/*')
-    train_data = np.zeros((3800,4096))
+    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
+    train_data = np.zeros((520,4096))
 
   i = 0
   for img_file in file_list:
@@ -106,9 +110,9 @@ def load_data(j):
 #Loading the Train and Test labels that are prepared by me in the data_prep.py
 def load_labels(j):
   if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_OS_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Train_Lables.csv')
   if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_OS_Lables.csv')
+    df = pd.read_csv('../data/Simple_CNN_Data/Test_Lables.csv')
   train_labels = df['Class'].tolist()
   train_labels = np.array(train_labels)
   return train_labels
@@ -130,7 +134,7 @@ def main(unused_argv):
   eval_labels = load_labels(1)
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sod2_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sod12_model")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
