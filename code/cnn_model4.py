@@ -90,8 +90,8 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_sampled_data_(j):
-  trainExamples=5
-  testExamples=5
+  trainExamples=2198
+  testExamples=520
   if j==0:
     iterations=trainExamples
   else:
@@ -126,40 +126,11 @@ def load_sampled_data_(j):
       negative=negative+1
     i=i+1
   labels = np.array(labels)
-
-  return train_data, labels
-
-def load_data(j):
-
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
-    train_data = np.zeros((5,4096))
-  if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
-    train_data = np.zeros((5,4096))
+    return train_data, labels,positive,negative
+  elif j==1:
+    return train_data,labels
 
-  i = 0
-  for img_file in file_list[0:5]:
-    img_file = Image.open(img_file)
-    arr = np.array(img_file)
-    arr = arr.flatten()
-    print(img_file.filename)
-    train_data[i] = arr
-    i = i + 1
-  return train_data
-
-
-#Loading the Train and Test labels that are prepared by me in the data_prep.py
-def load_labels(j):
-  if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_Lables.csv')
-  if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_Lables.csv')
-  train_labels = df['Class'].tolist()
-  print(df['file_name'][0:5])
-  train_labels = np.array(train_labels)
-  # print(train_labels)
-  return train_labels
 
 
 def getClasses(x):
@@ -170,12 +141,13 @@ def getClasses(x):
 
 def main(unused_argv):
 
-  train_data,train_labels=load_sampled_data_(0)
-  print(train_labels)
-  # eval_data,eval_labels=load_sampled_data_(1)
+  train_data,train_labels,positive,negative=load_sampled_data_(0)
+  # print(train_labels)
+  eval_data,eval_labels=load_sampled_data_(1)
   # print(eval_labels)
 
-
+  print("No of positive examples in training is ",positive)
+  print("No of negative examples in training is ",negative)
 
 
   # Load train and test data
@@ -185,54 +157,54 @@ def main(unused_argv):
   # eval_data = load_data(1)
   # eval_labels = load_labels(1)
 
-  # print("No of postive examples in training is ",positive)
-  # print("No of negative examples in training is ",negative)
+
 
   # Create the Estimator
-  # nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_vat9_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_vat2_model")
 
-  # # Set up logging for predictions
-  # tensors_to_log = {"probabilities": "softmax_tensor"}
-  # logging_hook = tf.train.LoggingTensorHook(tensors=tensors_to_log, every_n_iter=50)
+  # Set up logging for predictions
+  tensors_to_log = {"probabilities": "softmax_tensor"}
+  logging_hook = tf.train.LoggingTensorHook(tensors=tensors_to_log, every_n_iter=50)
 
-  # # Train the model
-  # train_data = train_data.astype(np.float32)
-  # print(train_data.dtype)
+  # Train the model
+  train_data = train_data.astype(np.float32)
+  print(train_data.dtype)
 
-  # # TensorFlow Train Function
-  # train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
+  # TensorFlow Train Function
+  train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
 
-  # # Classifier
-  # nodet_classifier.train(input_fn=train_input_fn,steps=1000,hooks=[logging_hook])
-  # eval_data = eval_data.astype(np.float32)
+  # Classifier
+  nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
+  eval_data = eval_data.astype(np.float32)
 
-  # # Test the classifier and print results
-  # eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-  #   x={"x": eval_data},
-  #   y=eval_labels,
-  #   num_epochs=1,
-  #   shuffle=False)
+  # Test the classifier and print results
+  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+    x={"x": eval_data},
+    y=eval_labels,
+    num_epochs=1,
+    shuffle=False)
 
-  # eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  # print(eval_results)
+  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+  print(eval_results)
 
-  # pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
+  pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
 
-  # preds = getClasses(pred)
-  # confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
+  preds = getClasses(pred)
+  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
-  # with tf.Session():
-  #   print("Confusion: ",tf.Tensor.eval(confusion))
+  with tf.Session():
+    print("Confusion: ",tf.Tensor.eval(confusion))
 
-  # eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-  #   x={"x": train_data},
-  #   y=train_labels,
-  #   num_epochs=1,
-  #   shuffle=False)
+  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+    x={"x": train_data},
+    y=train_labels,
+    num_epochs=1,
+    shuffle=False)
 
-  # eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  # print(eval_results)
-
+  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+  print(eval_results)
+  print("No of positive examples in training is ",positive)
+  print("No of negative examples in training is ",negative)
 
 # Run the TF App once the main function is called
 if __name__ == "__main__":
