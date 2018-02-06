@@ -20,36 +20,42 @@ import pandas as pd #Pandas is used to manipulate data frames
 
 
 
-#Loading Train and Test Data
-def load_data(j):
+def load_sampled_data_(j):
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
-    data = np.zeros((2198,4096))
+    file_list = glob('Train_1to2_Data/Train_1to2_Data/*')
+    TExamples = len(file_list)
+    Tdata = np.zeros((TExamples,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
-    data = np.zeros((520,4096))
+    file_list = glob('Test_1to2_Data/Test_1to2_Data/*')
+    TExamples = len(file_list)
+    Tdata = np.zeros((TExamples,4096))
 
   i = 0
-  for img_file in file_list:
+  for img_file in file_list[0:TExamples]:
     img_file = Image.open(img_file)
     arr = np.array(img_file)
     arr = arr.flatten()
-    print(img_file.filename)
-    data[i] = arr
+    #print(img_file.filename)
+    Tdata[i] = arr
     i = i + 1
-  data = np.array(data)
-  return np.transpose(data)
 
-#Loading Train and Test Labels
-def load_labels(j):
-  if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_Lables.csv')
-  if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_Lables.csv')
-  labels = df['Class'].tolist()
+  negative=0
+  positive=0
+  labels=[0]*TExamples
+
+  i=0
+  for filename in file_list[0:TExamples]:
+    if "_positive_" in filename:
+      positive=positive+1
+      labels[i]=1
+    elif "_negative_" in filename:
+      negative=negative+1
+    i=i+1
   labels = np.array(labels)
-  return labels
+
+  return np.transpose(Tdata), labels
+
 
 #Initialize Parameters - Weights and Bias through Xavier Initialization
 def initialize_parameters():
@@ -184,10 +190,11 @@ def forward_propagation_for_predict(X, parameters):
     return Z3
 
 #Final Model
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 1000, minibatch_size = 32, print_cost = True):
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 100, minibatch_size = 32, print_cost = True):
 
 
     ops.reset_default_graph()
+    
     (n_x, m) = X_train.shape
     n_y = Y_train.shape[0]
     costs = []
@@ -202,7 +209,8 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
     cost = compute_cost(Z3, Y)
 
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-
+    
+    saver = tf.train.Saver()
     init = tf.global_variables_initializer()
 
     # Start the session to compute the tensorflow graph
@@ -210,6 +218,10 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
 
         # Run the initialization
         sess.run(init)
+        
+        tf.train.write_graph(sess.graph_def, '.', 'hellotensor.pbtxt')
+        
+        saver.restore(sess, "deep_net_2.ckpt")
 
         # Do the training loop
         for epoch in range(num_epochs):
@@ -229,9 +241,7 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
                 print ("Cost after epoch %i: %f" % (epoch, epoch_cost))
             if print_cost == True and epoch % 5 == 0:
                 costs.append(epoch_cost)
-
-
-
+                
 
         # plot the cost
         # plt.plot(np.squeeze(costs))
@@ -254,8 +264,12 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
         print("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
         print("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
 
-        pred = tf.argmin(Z3)
+        pred = tf.argmax(Z3)
         pred = pred.eval({X: X_test})
+        
+        saver.save(sess, './deep_net_2.ckpt')
+        #save_path = saver.save(sess,model_path)
+        print("Epoches till " + str(epoch+1) + " Done")
         return parameters,pred
 
 
@@ -263,13 +277,10 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
 
 # Main Function
 def main():
-    X_train_orig = load_data(0)
-    X_test_orig  = load_data(1)
+    X_train_orig, Y_train_orig = load_sampled_data_(0)
+    X_test_orig, Y_test_orig  = load_sampled_data_(1)
 
     print X_train_orig.shape
-
-    Y_train_orig = load_labels(0)
-    Y_test_orig  = load_labels(1)
 
 
 	# Normalize image vectors
