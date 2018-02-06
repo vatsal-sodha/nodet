@@ -90,18 +90,18 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_sampled_data_(j):
-  trainExamples=2198
-  testExamples=520
+  trainExamples=4350
+  testExamples=1088
   if j==0:
     iterations=trainExamples
   else:
     iterations=testExamples
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
+    file_list = glob('../data/Simple_CNN_Data/Train_1to3_Data/*')
     train_data = np.zeros((trainExamples,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
+    file_list = glob('../data/Simple_CNN_Data/Test_1to3_Data/*')
     train_data = np.zeros((testExamples,4096))
 
   i = 0
@@ -160,7 +160,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_vat2_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sac7_model")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -173,39 +173,54 @@ def main(unused_argv):
   # TensorFlow Train Function
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
 
-  # Classifier
-  nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
-  eval_data = eval_data.astype(np.float32)
+  output_str=""
 
-  # Test the classifier and print results
-  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-    x={"x": eval_data},
-    y=eval_labels,
-    num_epochs=1,
-    shuffle=False)
+  for steps in range(10):
 
-  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  print(eval_results)
+    # Classifier
+    nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
+    eval_data = eval_data.astype(np.float32)
 
-  pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
+    # Test the classifier and print results
+    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+      x={"x": eval_data},
+      y=eval_labels,
+      num_epochs=1,
+      shuffle=False)
 
-  preds = getClasses(pred)
-  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
+    test_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+    print(test_results)
 
-  with tf.Session():
-    print("Confusion: ",tf.Tensor.eval(confusion))
+    pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
 
-  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-    x={"x": train_data},
-    y=train_labels,
-    num_epochs=1,
-    shuffle=False)
+    preds = getClasses(pred)
+    confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
-  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  print(eval_results)
-  print("No of positive examples in training is ",positive)
-  print("No of negative examples in training is ",negative)
+    with tf.Session():
+      confusion = tf.Tensor.eval(confusion)
+      print("Confusion: ",confusion)
+      tn = confusion[0][0]
+      fp = confusion[0][1]
+      fn = confusion[1][0]
+      tp = confusion[1][1]
+      tpr = tp/(tp+fn)
+      fpr = fp/(tn+fp)
 
+    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+      x={"x": train_data},
+      y=train_labels,
+      num_epochs=1,
+      shuffle=False)
+
+    train_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+    print(train_results)
+    #print("No of positive examples in training is ",positive)
+    #print("No of negative examples in training is ",negative)
+
+    output_str= "\n"+output_str+"train acc: "+str(train_results['accuracy'])+" test acc: "+str(test_results['accuracy'])+"\n"
+    output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
+
+  print(output_str)
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
