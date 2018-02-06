@@ -19,16 +19,15 @@ from PIL import Image #Image Processing Library
 import pandas as pd #Pandas is used to manipulate data frames
 
 
-model_path = "/tmp/DeepNet1.ckpt"
 
 def load_sampled_data_(j):
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
+    file_list = glob('Train_1to2_Data/Train_1to2_Data/*')
     TExamples = len(file_list)
     Tdata = np.zeros((TExamples,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
+    file_list = glob('Test_1to2_Data/Test_1to2_Data/*')
     TExamples = len(file_list)
     Tdata = np.zeros((TExamples,4096))
 
@@ -37,7 +36,7 @@ def load_sampled_data_(j):
     img_file = Image.open(img_file)
     arr = np.array(img_file)
     arr = arr.flatten()
-    print(img_file.filename)
+    #print(img_file.filename)
     Tdata[i] = arr
     i = i + 1
 
@@ -191,11 +190,11 @@ def forward_propagation_for_predict(X, parameters):
     return Z3
 
 #Final Model
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 1000, minibatch_size = 32, print_cost = True):
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs = 100, minibatch_size = 32, print_cost = True):
 
-	saver = tf.train.Saver()
 
     ops.reset_default_graph()
+    
     (n_x, m) = X_train.shape
     n_y = Y_train.shape[0]
     costs = []
@@ -210,7 +209,8 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
     cost = compute_cost(Z3, Y)
 
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-
+    
+    saver = tf.train.Saver()
     init = tf.global_variables_initializer()
 
     # Start the session to compute the tensorflow graph
@@ -219,8 +219,9 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
         # Run the initialization
         sess.run(init)
         
-        #saver.restore(sess.model_path)
+        tf.train.write_graph(sess.graph_def, '.', 'hellotensor.pbtxt')
         
+        saver.restore(sess, "deep_net_2.ckpt")
 
         # Do the training loop
         for epoch in range(num_epochs):
@@ -240,9 +241,7 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
                 print ("Cost after epoch %i: %f" % (epoch, epoch_cost))
             if print_cost == True and epoch % 5 == 0:
                 costs.append(epoch_cost)
-
-
-
+                
 
         # plot the cost
         # plt.plot(np.squeeze(costs))
@@ -267,8 +266,10 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001, num_epochs =
 
         pred = tf.argmax(Z3)
         pred = pred.eval({X: X_test})
-
-        save_path = saver.save(sess,model_path)
+        
+        saver.save(sess, './deep_net_2.ckpt')
+        #save_path = saver.save(sess,model_path)
+        print("Epoches till " + str(epoch+1) + " Done")
         return parameters,pred
 
 
