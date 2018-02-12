@@ -2,10 +2,9 @@
 #Author: Mohith Damarapati
 #Guide: Dr. Mukesh A Zaveri, SVNIT
 
-#DATA PREPARATION AFTER OVER SAMPLING OF DATASET
+#DATA PREPARATION
 
 #Imports
-
 import pandas as pd #Pandas for manipulating data frames
 import numpy as np #Numpy for operations on n-dimensional arrays
 from shutil import copyfile #For copying the image files from one location to other
@@ -14,11 +13,11 @@ from PIL import Image
 df = pd.read_csv('../data/allSubsetsFeatures.csv')
 
 print df['Class']
-ratio = 0
 
+ratio = 0.2
 print(ratio)
 
-total_neg=1360*ratio
+total_neg=1360*0.25
 total_pos=1360
 
 df_neg = df[df['Class']==0]
@@ -27,6 +26,7 @@ df_pos = df[df['Class']==1]
 
 print(len(df_pos))
 print(len(df_neg))
+
 #Randomly the data is shuffled
 df_neg = df_neg.sample(frac=1)
 df_pos = df_pos.sample(frac=1)
@@ -68,7 +68,7 @@ for i in df_fin_test['file_name']:
 	im = Image.open('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i)
 	width, height = im.size
 	if width==64 and height==64:
-		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/Simple_CNN_Data/Test_'+ str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
+		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/DataSets/Test_'+ str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
 		print i
 	else:
 		df_fin_test = df_fin_test[df_fin_test.file_name != i]
