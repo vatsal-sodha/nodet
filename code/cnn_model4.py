@@ -90,18 +90,18 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_sampled_data_(j):
-  trainExamples=2198
-  testExamples=520
+  trainExamples=1356
+  testExamples=584
   if j==0:
     iterations=trainExamples
   else:
     iterations=testExamples
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_Data/*')
+    file_list = glob('../data/DataSets/Train_0.7_Neg_0.3_Data/*')
     train_data = np.zeros((trainExamples,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_Data/*')
+    file_list = glob('../data/DataSets/Test_0.7_Neg_0.3_Data/*')
     train_data = np.zeros((testExamples,4096))
 
   i = 0
@@ -160,7 +160,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_sac8_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_PosNeg70:30_TrainTest70:30")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -175,7 +175,7 @@ def main(unused_argv):
 
   output_str=""
 
-  for steps in range(1):
+  for steps in range(5):
 
     # Classifier
     nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
@@ -214,8 +214,8 @@ def main(unused_argv):
 
     train_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
     print(train_results)
-    #print("No of positive examples in training is ",positive)
-    #print("No of negative examples in training is ",negative)
+    print("No of positive examples in training is ",positive)
+    print("No of negative examples in training is ",negative)
 
     output_str= "\n"+output_str+"train acc: "+str(train_results['accuracy'])+" test acc: "+str(test_results['accuracy'])+"\n"
     output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
