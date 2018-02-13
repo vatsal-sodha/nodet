@@ -14,8 +14,28 @@ import csv
 from glob import glob
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import math
 from PIL import Image
+
+from scipy import ndimage as ndi
+
+from skimage.morphology import watershed
+from skimage.feature import peak_local_max
+from skimage.segmentation import random_walker
+from sklearn.cluster import spectral_clustering
+from sklearn.feature_extraction import image
+
+from skimage import restoration
+from skimage import img_as_float
+from skimage.filters import roberts, sobel, scharr, prewitt
+from skimage.morphology import skeletonize,skeletonize_3d,medial_axis,thin
+
+from math import sqrt
+from skimage import data
+from skimage.feature import blob_dog, blob_log, blob_doh
+from skimage.color import rgb2gray
+
+from skimage.morphology import convex_hull_image
 
 def load_image( infilename ) :
     img = Image.open( infilename )
@@ -30,50 +50,7 @@ def normalising0to1(img):
     return img
 
 <<<<<<< HEAD
-def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_93273_134671.jpg"):
-    seg = load_image(fname)
-    seg = normalising0to1(seg)
-    plt.title("Image after normalising0to1")
-    plt.imshow(seg,cmap="gray")
-        
-    plt.show()
-    #metrics
-    totalArea = 0.
-    avgArea = 0.
-    maxArea = 0.
-    avgEcc = 0.
-    avgEquivlentDiameter = 0.
-    stdEquivlentDiameter = 0.
-    weightedX = 0.
-    weightedY = 0.
-    numNodes = 0.
-    numNodesperSlice = 0.
-    # do not allow any nodes to be larger than 10% of the pixels to eliminate background regions
-    maxAllowedArea = 0.10 * 512 * 512 
-    areas = []
-    eqDiameters = []
-    regions = getRegionFromMap(seg)
-    for region in regions:
-        if region.area > maxAllowedArea:
-            continue
-        totalArea += region.area
-        areas.append(region.area)
-        avgEcc += region.eccentricity
-        avgEquivlentDiameter += region.equivalent_diameter
-        eqDiameters.append(region.equivalent_diameter)
-        weightedX += region.centroid[0]*region.area
-        weightedY += region.centroid[1]*region.area
-        numNodes += 1
-    weightedX = weightedX / totalArea 
-    weightedY = weightedY / totalArea
-    avgArea = totalArea / numNodes
-    avgEcc = avgEcc / numNodes
-    avgEquivlentDiameter = avgEquivlentDiameter / numNodes
-    stdEquivlentDiameter = np.std(eqDiameters)
-    maxArea = max(areas)
-    return np.array([avgArea,maxArea,avgEcc,avgEquivlentDiameter, 
-        stdEquivlentDiameter, weightedX, weightedY, numNodes])
-=======
+
 def medianFilter(img):
 	 img=ndimage.median_filter(img,3)
 	 return img
@@ -200,12 +177,11 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_4137
 	EulerNumber = region.euler_number
 	return ([fileName, totalArea,Ecc,EquivlentDiameter, weightedX, weightedY, Rectangularity, 
 		MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
->>>>>>> features set for all subsets
 
 
 
 def getRegionFromMap(slice_npy):
-    print("mean",np.mean(slice_npy))
+    #print("mean",np.mean(slice_npy))
     #thr = np.where(slice_npy > np.mean(slice_npy),0.,1.0)
 
     #plt.title("Ihresholding")
@@ -216,12 +192,18 @@ def getRegionFromMap(slice_npy):
     #labels = label_image.astype(int)
     #regions = measure.regionprops(labels)
 
-    blur_radius = 1.0
-    threshold = 0.5
+    blur_radius = 0.5
+    threshold = 0.44
+
+    # eq=equalize_hist(slice_npy)
+    # plt.subplot(4,3,4)
+    # plt.title("Histogram equlised image")
+    # plt.imshow(eq,cmap="gray")
+
+    #eq = np.where(eq>0.44,eq,0)
 
     imgf = ndimage.gaussian_filter(slice_npy, blur_radius)
-<<<<<<< HEAD
-=======
+
     #plt.title("after gaussian_filter")
     #plt.imshow(imgf,cmap="gray")
     #plt.show()
@@ -230,21 +212,16 @@ def getRegionFromMap(slice_npy):
     plt.title("after median_filter")
     plt.imshow(median,cmap="gray")
     plt.show()
->>>>>>> features set for all subsets
 
-    plt.title("after gaussian_filter")
-    plt.imshow(imgf,cmap="gray")
-    plt.show()
+    #test(median)
 
-    labeled, nr_objects = ndimage.label(imgf > threshold)
-    print("no of objects", nr_objects)
+    labeled, nr_objects = ndimage.label(median > threshold)
+    #print("no of objects", nr_objects)
     regions = measure.regionprops(labeled)
 
     plt.title("regions")
     plt.imshow(labeled,cmap="gray")
     plt.show()
-<<<<<<< HEAD
-=======
 
     return regions, labeled, nr_objects
 
@@ -255,12 +232,6 @@ def OTSUsegmentation(img):
 	otsu=morphology.erosion(otsu,np.ones([3,3]))
 	#otsu=np.where(otsu==1,0,1)
 	return otsu
-
-
->>>>>>> features set for all subsets
-
-    return regions
-
 
 features=getRegionMetricRow()
 print(features)
