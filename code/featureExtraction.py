@@ -53,12 +53,12 @@ def medianFilter(img):
 	 img=ndimage.median_filter(img,3)
 	 return img
 
-def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_41371_120532.jpg"):
+def getRegionMetricRow(fname):
 	seg = load_image(fname)
 	seg = normalising0to1(seg)
-	plt.title("Image after normalising0to1")
-	plt.imshow(seg,cmap="gray")    
-	plt.show()
+	#plt.title("Image after normalising0to1")
+	#plt.imshow(seg,cmap="gray")    
+	#plt.show()
 
 	#metrics
 	totalArea = 0.0
@@ -73,10 +73,15 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_4137
 	Circularity = 0.0
 	Elongation = 0.0
 	EulerNumber = 0.0
+	StandardDeviation = 0.0
+	NormalisedHuMoments = 0.0
+	TranslationalInvariance = 0.0
+	RotationalInvariance = 0.0
+	ScaleInvariance = 0.0
 
 	f1=fname.split("/")
-	fileName="".join(f1[3])
-	f2=f1[3].split("_")
+	fileName="".join(f1[4])
+	f2=f1[4].split("_")
 	classLabel=f2[1]
 	if classLabel == "positive":
 		classLabel=1
@@ -121,15 +126,15 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_4137
 				#img_fill_holes = ndimage.binary_fill_holes(km)
 				chull=convex_hull_image(km)
 				chull=morphology.erosion(chull,np.ones([3,3]))
-				plt.title("convex hull")
-				plt.imshow(chull,cmap="gray")
-				plt.show()
+				#plt.title("convex hull")
+				#plt.imshow(chull,cmap="gray")
+				#plt.show()
 
 				seg_nodule = segmented_region * chull
 				seg_nodule = morphology.dilation(seg_nodule, np.ones([2,2]))
-				plt.title("segmented nodule")
-				plt.imshow(seg_nodule,cmap="gray")
-				plt.show()
+				#plt.title("segmented nodule")
+				#plt.imshow(seg_nodule,cmap="gray")
+				#plt.show()
 
 				threshold = 0.44
 
@@ -155,7 +160,7 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_4137
 
 	if nodule_region == 0:
 		print("No nodules found")
-		return ([fileName, totalArea,Ecc,EquivlentDiameter, weightedX, weightedY, Rectangularity, 
+		return ([fileName, totalArea, Ecc, EquivlentDiameter, weightedX, weightedY, Rectangularity, 
 			MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
 	region = nodule_region
 	B = region.bbox
@@ -173,8 +178,19 @@ def getRegionMetricRow(fname = "../data/subset0_candidates/subset0_positive_4137
 	height = B[2] - B[0]
 	Elongation = min(height,width) / max(height, width)
 	EulerNumber = region.euler_number
-	return ([fileName, totalArea,Ecc,EquivlentDiameter, weightedX, weightedY, Rectangularity, 
-		MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
+	StandardDeviation = np.std(original)
+	NormalisedHuMoments = region.moments_normalized
+	print("----"+str(classLabel))
+	if abs(NormalisedHuMoments[3][1]) != 0.0:
+		TranslationalInvariance = abs(math.log10(abs(NormalisedHuMoments[3][1])))
+	if abs(NormalisedHuMoments[3][2]) != 0.0:
+		RotationalInvariance = abs(math.log10(abs(NormalisedHuMoments[3][2])))
+	if abs(NormalisedHuMoments[3][3]) != 0.0:
+		ScaleInvariance = abs(math.log10(abs(NormalisedHuMoments[3][3])))
+
+	return ([fileName, totalArea, Perimeter, Ecc, EquivlentDiameter, weightedX, weightedY, Rectangularity, 
+		MeanIntensity, Circularity, Elongation, EulerNumber, StandardDeviation, TranslationalInvariance,
+		RotationalInvariance, ScaleInvariance, classLabel])
 
 
 
@@ -207,9 +223,9 @@ def getRegionFromMap(slice_npy):
     #plt.show()
 
     median = medianFilter(imgf)
-    plt.title("after median_filter")
-    plt.imshow(median,cmap="gray")
-    plt.show()
+    #plt.title("after median_filter")
+    #plt.imshow(median,cmap="gray")
+    #plt.show()
 
     #test(median)
 
@@ -217,9 +233,9 @@ def getRegionFromMap(slice_npy):
     #print("no of objects", nr_objects)
     regions = measure.regionprops(labeled)
 
-    plt.title("regions")
-    plt.imshow(labeled,cmap="gray")
-    plt.show()
+    #plt.title("regions")
+    #plt.imshow(labeled,cmap="gray")
+    #plt.show()
 
     return regions, labeled, nr_objects
 
@@ -231,7 +247,5 @@ def OTSUsegmentation(img):
 	#otsu=np.where(otsu==1,0,1)
 	return otsu
 
-features=getRegionMetricRow()
-print(features)
 
 

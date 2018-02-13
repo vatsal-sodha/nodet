@@ -16,13 +16,15 @@ import matplotlib.pyplot as plt
 from featureExtraction import getRegionMetricRow
 import os	
 
-columns=['file_name','totalArea','Ecc','EquivlentDiameter', 'weightedX', 'weightedY', 'Rectangularity', 
-		'MeanIntensity', 'Circularity', 'Elongation', 'EulerNumber', 'Class']
-featuresFileName="../data/allSubsetsFeatures.csv"
+columns=['file_name','totalArea', 'Perimeter', 'Ecc','EquivlentDiameter', 'weightedX', 'weightedY', 'Rectangularity', 
+		'MeanIntensity', 'Circularity', 'Elongation', 'EulerNumber', 'StandardDeviation', 
+		'TranslationalInvariance', 'RotationalInvariance', 'ScaleInvariance', 'Class']
+featuresFileName="../data/DataSets/"
 # def makeCsvHeader():
 	# df=pd.DataFrame([])
 	# df.to_csv("../data/features.csv",columns=columns)
-def writeToCSV(folder_path="../data/subset9_candidates/"):
+def writeToCSV(folder_path, featuresFileName):
+	print(folder_path," ",featuresFileName)
 	file_list=glob(folder_path+"*.jpg")
 	# print(folder_path)
 	# features=np.empty()
@@ -40,5 +42,9 @@ def writeToCSV(folder_path="../data/subset9_candidates/"):
 	# print(df)
 	# header will be written only when there is no features.csv file
 	df.to_csv(featuresFileName,index=False,mode='a',header=(not os.path.exists(featuresFileName)))
-writeToCSV()
+#writeToCSV()
 # makeCsvHeader()
+for x in os.listdir("../data/DataSets"):
+	print("x: ",x)
+	writeToCSV(featuresFileName+x+"/", "../data/FeaturesDataSets/"+x+".csv")
+	
