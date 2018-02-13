@@ -15,7 +15,7 @@ df = pd.read_csv('../data/sampled_data.csv')
 
 print df['Class']
 
-ratio = 0.5
+ratio = 0.2
 print(ratio)
 
 total_pos=9520
@@ -36,7 +36,7 @@ df_pos = df_pos.sample(frac=1)
 
 #Train and Test Set - Negatives
 
-split = 0.8
+split = 0.6
 
 df_neg_train = df_neg[0:int(total_neg*split)]
 df_neg_test = df_neg[int(total_neg*split):total_neg]
@@ -66,7 +66,7 @@ for i in df_fin_train['file_name']:
 	width, height = im.size
 	if width==64 and height==64:
 
-		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/OSDataSets/OS_Train_' + str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
+		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/OSDataSets/OSTrain_' + str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
 		#print i
 	else:
 		df_fin_train = df_fin_train[df_fin_train.file_name != i]
@@ -83,7 +83,7 @@ for i in df_fin_test['file_name']:
 
 	if width==64 and height==64:
 
-		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/OSDataSets/Test_'+ str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
+		copyfile('../../../Data_Nodet/data/data/subset'+str(n)+'_candidates/'+i,'../data/OSDataSets/OSTest_'+ str(split)+'_Neg_'+str(ratio)+'_Data/' + i)
 		#print i
 	else:
 		df_fin_test = df_fin_test[df_fin_test.file_name != i]
