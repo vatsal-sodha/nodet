@@ -49,8 +49,6 @@ def normalising0to1(img):
     img=img/range1
     return img
 
-<<<<<<< HEAD
-
 def medianFilter(img):
 	 img=ndimage.median_filter(img,3)
 	 return img
