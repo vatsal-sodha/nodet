@@ -84,9 +84,9 @@ def getRegionMetricRow(fname):
 	f2=f1[4].split("_")
 	classLabel=f2[1]
 	if classLabel == "positive":
-		classLabel=1
-	elif classLabel == "negative":
 		classLabel=0
+	elif classLabel == "negative":
+		classLabel=1
 
 	original = seg
 	regions, labels, numberOfRegions = getRegionFromMap(seg)
@@ -101,8 +101,9 @@ def getRegionMetricRow(fname):
 	#print("label: "+str(required_label))
 	if required_label == 0 :
 		print("No nodules found")
-		return ([fileName, totalArea,Ecc,EquivlentDiameter, weightedX, weightedY, Rectangularity, 
-			MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
+		return ([fileName, totalArea, Perimeter, Ecc, EquivlentDiameter, weightedX, weightedY, Rectangularity, 
+		MeanIntensity, Circularity, Elongation, EulerNumber, StandardDeviation, TranslationalInvariance,
+		RotationalInvariance, ScaleInvariance, classLabel])
 
 	nodule_region = 0
 
@@ -160,8 +161,9 @@ def getRegionMetricRow(fname):
 
 	if nodule_region == 0:
 		print("No nodules found")
-		return ([fileName, totalArea, Ecc, EquivlentDiameter, weightedX, weightedY, Rectangularity, 
-			MeanIntensity, Circularity, Elongation, EulerNumber, classLabel])
+		return ([fileName, totalArea, Perimeter, Ecc, EquivlentDiameter, weightedX, weightedY, Rectangularity, 
+		MeanIntensity, Circularity, Elongation, EulerNumber, StandardDeviation, TranslationalInvariance,
+		RotationalInvariance, ScaleInvariance, classLabel])
 	region = nodule_region
 	B = region.bbox
 	totalArea = region.area
