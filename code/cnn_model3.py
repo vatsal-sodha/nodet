@@ -37,18 +37,27 @@ def cnn_model_fn(features, labels, mode):
   # pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
 
   # DropOut - To reduce Over Fitting of the data
+  dropout1 = tf.layers.dropout(inputs=conv2, rate=0.2, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Convolutional Layer #2
-  conv3 = tf.layers.conv2d(inputs=conv2,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
+  conv3 = tf.layers.conv2d(inputs=dropout1,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
   # Pooling Layer #2
   pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
   # Convolutional Layer #4
-  dropout1 = tf.layers.dropout(inputs=pool3, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+  dropout2 = tf.layers.dropout(inputs=pool3, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
 
-  conv4 = tf.layers.conv2d(inputs=dropout1,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv4 = tf.layers.conv2d(inputs=dropout2,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+
+  conv5 = tf.layers.conv2d(inputs=conv4,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
+  # Pooling Layer #2
+  pool4 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+
+  conv6 = tf.layers.conv2d(inputs=pool4,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
+  # Pooling Layer #2
+  pool5 = tf.layers.max_pooling2d(inputs=conv6, pool_size=[2, 2], strides=2)
 
   # Dense Layer
-  pool3_flat = tf.reshape(conv4, [-1, 16 * 16 * 64])
+  pool3_flat = tf.reshape(pool5, [-1, 4 * 4 * 32])
   dense = tf.layers.dense(inputs=pool3_flat, units=1024, activation=tf.nn.relu)
 
   # DropOut - To reduce Over Fitting of the data
@@ -88,34 +97,48 @@ def cnn_model_fn(features, labels, mode):
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
-def load_data(j):
+def load_sampled_data_(j):
+  trainExamples=1359
+  testExamples=339
+  if j==0:
+    iterations=trainExamples
+  else:
+    iterations=testExamples
 
   if j==0:
-    file_list = glob('../data/Simple_CNN_Data/Train_1to3_Data/*')
-    train_data = np.zeros((4350,4096))
+    file_list = glob('../data/DataSets/Train_0.8_Neg_0.2_Data/*')
+    train_data = np.zeros((trainExamples,4096))
   if j==1:
-    file_list = glob('../data/Simple_CNN_Data/Test_1to3_Data/*')
-    train_data = np.zeros((1088,4096))
+    file_list = glob('../data/DataSets/Test_0.8_Neg_0.2_Data/*')
+    train_data = np.zeros((testExamples,4096))
 
   i = 0
-  for img_file in file_list:
+  for img_file in file_list[0:iterations]:
     img_file = Image.open(img_file)
     arr = np.array(img_file)
     arr = arr.flatten()
     print(img_file.filename)
     train_data[i] = arr
     i = i + 1
-  return train_data
+  negative=0
+  positive=0
+  # df=pd.DataFrame(columns=['file_name','Class'])
+  labels=[0]*iterations
 
-#Loading the Train and Test labels that are prepared by me in the data_prep.py
-def load_labels(j):
+  i=0
+  for  filename in file_list[0:iterations]:
+    if "_positive_" in filename:
+      positive=positive+1
+      labels[i]=1
+    elif "_negative_" in filename:
+      negative=negative+1
+    i=i+1
+  labels = np.array(labels)
   if j==0:
-    df = pd.read_csv('../data/Simple_CNN_Data/Train_1to3_Lables.csv')
-  if j==1:
-    df = pd.read_csv('../data/Simple_CNN_Data/Test_1to3_Lables.csv')
-  train_labels = df['Class'].tolist()
-  train_labels = np.array(train_labels)
-  return train_labels
+    return train_data, labels,positive,negative
+  elif j==1:
+    return train_data,labels
+
 
 
 def getClasses(x):
@@ -126,15 +149,26 @@ def getClasses(x):
 
 def main(unused_argv):
 
-  # Load train and test data
-  train_data = load_data(0)
-  train_labels = load_labels(0)
+  train_data,train_labels,positive,negative=load_sampled_data_(0)
+  # print(train_labels)
+  eval_data,eval_labels=load_sampled_data_(1)
+  # print(eval_labels)
 
-  eval_data = load_data(1)
-  eval_labels = load_labels(1)
+  print("No of positive examples in training is ",positive)
+  print("No of negative examples in training is ",negative)
+
+
+  # Load train and test data
+  # train_data = load_data(0)
+  # train_labels = load_labels(0)
+
+  # eval_data = load_data(1)
+  # eval_labels = load_labels(1)
+
+
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="/tmp/nodet_convnet_vat3_model")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/samplemodel")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -147,38 +181,54 @@ def main(unused_argv):
   # TensorFlow Train Function
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
 
-  # Classifier
-  nodet_classifier.train(input_fn=train_input_fn,steps=1000,hooks=[logging_hook])
-  eval_data = eval_data.astype(np.float32)
+  output_str=""
 
-  # Test the classifier and print results
-  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-    x={"x": eval_data},
-    y=eval_labels,
-    num_epochs=1,
-    shuffle=False)
+  for steps in range(5):
 
-  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  print(eval_results)
+    # Classifier
+    nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
+    eval_data = eval_data.astype(np.float32)
 
-  pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
+    # Test the classifier and print results
+    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+      x={"x": eval_data},
+      y=eval_labels,
+      num_epochs=1,
+      shuffle=False)
 
-  preds = getClasses(pred)
-  confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
+    test_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+    print(test_results)
 
-  with tf.Session():
-    print("Confusion: ",tf.Tensor.eval(confusion))
+    pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
 
-  eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-    x={"x": train_data},
-    y=train_labels,
-    num_epochs=1,
-    shuffle=False)
+    preds = getClasses(pred)
+    confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
-  eval_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-  print(eval_results)
+    with tf.Session():
+      confusion = tf.Tensor.eval(confusion)
+      print("Confusion: ",confusion)
+      tn = confusion[0][0]
+      fp = confusion[0][1]
+      fn = confusion[1][0]
+      tp = confusion[1][1]
+      tpr = tp/(tp+fn)
+      fpr = fp/(tn+fp)
 
+    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+      x={"x": train_data},
+      y=train_labels,
+      num_epochs=1,
+      shuffle=False)
 
+    train_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+    print(train_results)
+    print("No of positive examples in training is ",positive)
+    print("No of negative examples in training is ",negative)
+
+    output_str= "\n"+output_str+"train acc: "+str(train_results['accuracy'])+" test acc: "+str(test_results['accuracy'])+"\n"
+    output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
+
+  print(output_str)
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
