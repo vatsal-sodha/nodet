@@ -18,8 +18,40 @@ labels = ['FileName','Width','Height','Class','Xmin','Ymin','Xmax','Ymax']
 
 for img_file in file_list:
 	#print(img_file)
-	nodule_images.append(img_file)
+	#nodule_images.append(img_file)
 	classname.append("nodule")
+
+
+for i in range(0,10):
+	if i==0:
+		for j in range(0,67):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==1:
+		for j in range(0,61):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==2:
+		for j in range(0,56):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==3:
+		for j in range(0,65):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==4:
+		for j in range(0,62):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==5:
+		for j in range(0,54):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==7:
+		for j in range(0,54):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==8:
+		for j in range(0,60):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==9:
+		for j in range(0,59):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+
+print(len(nodule_images))
 
 radius = (df['Diam']/2)
 radius = radius.values.tolist()

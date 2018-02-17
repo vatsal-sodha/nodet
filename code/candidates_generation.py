@@ -40,7 +40,6 @@ output_dir = "../data/"+subset_number+"_candidates/"
 df_node = pd.read_csv("../data/WorldToVoxel_"+subset_number+"_candidates.csv")
 print(df_node.shape)
 
-print(df_node.seriesuid.unique().shape)
 img_id = 100000
 
 for img_file in file_list:
