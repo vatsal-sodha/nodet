@@ -19,7 +19,7 @@ import os
 columns=['file_name','totalArea', 'Perimeter', 'Ecc','EquivlentDiameter', 'weightedX', 'weightedY', 'Rectangularity', 
 		'MeanIntensity', 'Circularity', 'Elongation', 'EulerNumber', 'StandardDeviation', 
 		'TranslationalInvariance', 'RotationalInvariance', 'ScaleInvariance', 'Class']
-featuresFileName="../data/DataSets/"
+featuresFileName="../data/OSDataSets/"
 # def makeCsvHeader():
 	# df=pd.DataFrame([])
 	# df.to_csv("../data/features.csv",columns=columns)
@@ -44,9 +44,9 @@ def writeToCSV(folder_path, featuresFileName):
 	df.to_csv(featuresFileName,index=False,mode='a',header=(not os.path.exists(featuresFileName)))
 #writeToCSV()
 # makeCsvHeader()
-for x in os.listdir("../data/DataSets"):
+for x in os.listdir("../data/OSDataSets"):
 	print("x: ",x)
-	writeToCSV(featuresFileName+x+"/", "../data/FeaturesDataSets/"+x+".csv")
+	writeToCSV(featuresFileName+x+"/", "../data/OSFeaturesDataSets/"+x+".csv")
 
 #for appending 2 csv files command
 #cat Train_0.8_Neg_0.5_Data.csv <(tail +2 Test_0.8_Neg_0.5_Data.csv) > Pos_0.5_Neg_0.5_Data.csv	
