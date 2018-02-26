@@ -90,18 +90,18 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_sampled_data_(j):
-  trainExamples=1630*7
-  testExamples=1088*7
+  trainExamples=1630
+  testExamples=1088
   if j==0:
     iterations=trainExamples
   else:
     iterations=testExamples
 
   if j==0:
-    file_list = glob('../data/OSDataSets/OSTrain_0.6_Neg_0.5_Data/*')
+    file_list = glob('../data/DataSets/Train_0.6_Neg_0.5_Data/*')
     train_data = np.zeros((trainExamples,4096))
   if j==1:
-    file_list = glob('../data/OSDataSets/OSTest_0.6_Neg_0.5_Data/*')
+    file_list = glob('../data/DataSets/Test_0.6_Neg_0.5_Data/*')
     train_data = np.zeros((testExamples,4096))
 
   i = 0
@@ -116,9 +116,11 @@ def load_sampled_data_(j):
   positive=0
   # df=pd.DataFrame(columns=['file_name','Class'])
   labels=[0]*iterations
+  filenames=["0"]*iterations
 
   i=0
   for  filename in file_list[0:iterations]:
+    filenames[i]=filename
     if "_positive_" in filename:
       positive=positive+1
       labels[i]=1
@@ -127,9 +129,9 @@ def load_sampled_data_(j):
     i=i+1
   labels = np.array(labels)
   if j==0:
-    return train_data, labels,positive,negative
+    return train_data, labels,positive,negative,filenames
   elif j==1:
-    return train_data,labels
+    return train_data,labels,filenames
 
 
 
@@ -138,12 +140,26 @@ def getClasses(x):
   for i in range(len(x)):
     pred.append(x[i]['classes'])
   return pred
+def getPreds(filenames,eval_labels,predictions):
+  fps=[]
+  tps=[]
+  if len(filenames)==len(eval_labels)==len(predictions):
+    for i in range(len(filenames)):
+      if eval_labels[i]==0 and predictions[i]==1:
+        fps.append(filenames[i])
+      elif eval_labels[i]==1 and predictions[i]==1:
+        tps.append(filenames[i])
+    return tps,fps
+  else:
+    print("Incorrect Length")
+    return tps,fps
+
 
 def main(unused_argv):
 
-  train_data,train_labels,positive,negative=load_sampled_data_(0)
+  train_data,train_labels,positive,negative,train_filenames=load_sampled_data_(0)
   # print(train_labels)
-  eval_data,eval_labels=load_sampled_data_(1)
+  eval_data,eval_labels,test_filenames=load_sampled_data_(1)
   # print(eval_labels)
 
   print("No of positive examples in training is ",positive)
@@ -160,7 +176,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_OS_PosNeg50:50_TrainTest60:40")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/trail1")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -175,10 +191,10 @@ def main(unused_argv):
 
   output_str=""
 
-  for steps in range(25):
+  for steps in range(1):
 
     # Classifier
-    nodet_classifier.train(input_fn=train_input_fn,steps=500,hooks=[logging_hook])
+    nodet_classifier.train(input_fn=train_input_fn,steps=1,hooks=[logging_hook])
     eval_data = eval_data.astype(np.float32)
 
     # Test the classifier and print results
@@ -194,6 +210,16 @@ def main(unused_argv):
     pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
 
     preds = getClasses(pred)
+    # print(test_filenames)
+    # print(len(test_filenames))
+    print("TEst_filenames length ",len(test_filenames))
+    print("eval_labels length ",len(eval_labels))
+    print("preds length ",len(preds))
+
+    tps,fps=getPreds(test_filenames,eval_labels,preds)
+    print("True positives are ",len(tps))
+    print("False positives are ",len(fps))
+
     confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
     with tf.Session():
