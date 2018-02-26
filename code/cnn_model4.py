@@ -176,7 +176,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/trail1")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_PosNeg50:50_TrainTest60:40")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -194,7 +194,7 @@ def main(unused_argv):
   for steps in range(1):
 
     # Classifier
-    nodet_classifier.train(input_fn=train_input_fn,steps=1,hooks=[logging_hook])
+    nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
     eval_data = eval_data.astype(np.float32)
 
     # Test the classifier and print results
@@ -212,14 +212,19 @@ def main(unused_argv):
     preds = getClasses(pred)
     # print(test_filenames)
     # print(len(test_filenames))
-    print("TEst_filenames length ",len(test_filenames))
-    print("eval_labels length ",len(eval_labels))
-    print("preds length ",len(preds))
+
 
     tps,fps=getPreds(test_filenames,eval_labels,preds)
     print("True positives are ",len(tps))
     print("False positives are ",len(fps))
 
+    model_list=["cnn_model4_PosNeg50:50_TrainTest60:40"]*len(tps)
+    tps_fps_df=pd.DataFrame.from_dict({'Model':model_list,'tps_800':tps,'fps_800':fps},orient='index')
+    df=tps_fps_df.transpose()
+    df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+    # columns_list=['model','tps_'+str(200),'fps_'+str(200)]
+    # tps_fps_df=pd.DataFrame(np.column_stack([model_list,tps,fps]),columns=columns_list)
+    # tps_fps_df.describe()
     confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
 
     with tf.Session():
