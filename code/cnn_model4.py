@@ -98,10 +98,10 @@ def load_sampled_data_(j):
     iterations=testExamples
 
   if j==0:
-    file_list = glob('../data/DataSets/Train_0.6_Neg_0.5_Data/*')
+    file_list = glob('../data/OSDataSets/OSTrain_0.7_Neg_0.5_Data/*')
     train_data = np.zeros((trainExamples,4096))
   if j==1:
-    file_list = glob('../data/DataSets/Test_0.6_Neg_0.5_Data/*')
+    file_list = glob('../data/OSDataSets/OSTest_0.7_Neg_0.5_Data/*')
     train_data = np.zeros((testExamples,4096))
 
   i = 0
@@ -143,13 +143,19 @@ def getClasses(x):
 def getPreds(filenames,eval_labels,predictions):
   fps=[]
   tps=[]
+  tns=[]
+  fns=[]
   if len(filenames)==len(eval_labels)==len(predictions):
     for i in range(len(filenames)):
       if eval_labels[i]==0 and predictions[i]==1:
         fps.append(filenames[i])
       elif eval_labels[i]==1 and predictions[i]==1:
         tps.append(filenames[i])
-    return tps,fps
+      elif eval_labels[i]==0 and predictions[i]==0:
+        tns.append(filenames[i])
+      elif eval_labels[i]==1 and predictions[i]==0:
+        fns.append(filenames[i])
+    return tps,fps,tns,fns
   else:
     print("Incorrect Length")
     return tps,fps
@@ -176,7 +182,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_PosNeg50:50_TrainTest60:40")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_OS_PosNeg50:50_TrainTest70:30")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -190,11 +196,15 @@ def main(unused_argv):
   train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
 
   output_str=""
+  epochs=1
+  iterations=1
 
-  for steps in range(1):
+  model_list=["cnn_model4_OS_PosNeg50:50_TrainTest70:30"]*int((len(eval_labels)/2))
+  tps_fps_df=pd.DataFrame(model_list,columns=['Model'])
+  for steps in range(iterations):
 
     # Classifier
-    nodet_classifier.train(input_fn=train_input_fn,steps=100,hooks=[logging_hook])
+    nodet_classifier.train(input_fn=train_input_fn,steps=epochs,hooks=[logging_hook])
     eval_data = eval_data.astype(np.float32)
 
     # Test the classifier and print results
@@ -214,14 +224,21 @@ def main(unused_argv):
     # print(len(test_filenames))
 
 
-    tps,fps=getPreds(test_filenames,eval_labels,preds)
+    tps,fps,tns,fns=getPreds(test_filenames,eval_labels,preds)
     print("True positives are ",len(tps))
     print("False positives are ",len(fps))
+    print("False negatives are ",len(fns))
+    print("True negatives are ",len(tns))
 
-    model_list=["cnn_model4_PosNeg50:50_TrainTest60:40"]*len(tps)
-    tps_fps_df=pd.DataFrame.from_dict({'Model':model_list,'tps_800':tps,'fps_800':fps},orient='index')
-    df=tps_fps_df.transpose()
-    df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+    current_epoch=(steps+1)*epochs
+    tps_fps_df['tps_'+str(current_epoch)]=pd.Series(tps)
+    tps_fps_df['fps_'+str(current_epoch)]=pd.Series(fps)
+    tps_fps_df['tns_'+str(current_epoch)]=pd.Series(tns)
+    tps_fps_df['fns_'+str(current_epoch)]=pd.Series(fns)
+
+    # tps_fps_df=pd.DataFrame.from_dict({'Model':model_list,'tps_800':tps,'fps_800':fps},orient='index')
+    # df=tps_fps_df.transpose()
+    # df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
     # columns_list=['model','tps_'+str(200),'fps_'+str(200)]
     # tps_fps_df=pd.DataFrame(np.column_stack([model_list,tps,fps]),columns=columns_list)
     # tps_fps_df.describe()
@@ -252,6 +269,8 @@ def main(unused_argv):
     output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
 
   print(output_str)
+  tps_fps_df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
