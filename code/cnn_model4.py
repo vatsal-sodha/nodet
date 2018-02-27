@@ -13,6 +13,8 @@ from PIL import Image #Image Processing Library
 import numpy as np #Numpy to manipulate n-dimensional arrays
 import tensorflow as tf #TensorFlow - ConvNet and DeepNet Functions
 import pandas as pd #Pandas is used to manipulate data frames
+import os
+import shutil
 
 #TensorFlow function to display information about the version and other details
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -160,117 +162,143 @@ def getPreds(filenames,eval_labels,predictions):
     print("Incorrect Length")
     return tps,fps
 
+def savePreds(filename,model):
+  directory_path='../../../tps&fps_images/'+model
+  epoch=1
+  df=pd.read_csv(filename)
+  fps=df['fps_'+str(epoch)]
+  fps=fps.dropna()
+  fps=fps.tolist()
+
+  fns=df['fns_'+str(epoch)]
+  fns=fns.dropna()
+  fns=fns.tolist()
+
+  if not os.path.exists(directory_path):
+    os.makedirs(directory_path)
+    os.makedirs(directory_path+'/fps')
+    os.makedirs(directory_path+'/fns')
+
+
+  for i in range(len(fps)):
+    shutil.copy(fps[i],directory_path+'/fps')
+
+  for i in range(len(fns)):
+    shutil.copy(fns[i],directory_path+'/fns')
+
+  # print(fns)
+  # print(len(fns))
 
 def main(unused_argv):
 
-  train_data,train_labels,positive,negative,train_filenames=load_sampled_data_(0)
-  # print(train_labels)
-  eval_data,eval_labels,test_filenames=load_sampled_data_(1)
-  # print(eval_labels)
+  # train_data,train_labels,positive,negative,train_filenames=load_sampled_data_(0)
+  # # print(train_labels)
+  # eval_data,eval_labels,test_filenames=load_sampled_data_(1)
+  # # print(eval_labels)
 
-  print("No of positive examples in training is ",positive)
-  print("No of negative examples in training is ",negative)
-
-
-  # Load train and test data
-  # train_data = load_data(0)
-  # train_labels = load_labels(0)
-
-  # eval_data = load_data(1)
-  # eval_labels = load_labels(1)
+  # print("No of positive examples in training is ",positive)
+  # print("No of negative examples in training is ",negative)
 
 
+  # # Load train and test data
+  # # train_data = load_data(0)
+  # # train_labels = load_labels(0)
 
-  # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_OS_PosNeg50:50_TrainTest70:30")
-
-  # Set up logging for predictions
-  tensors_to_log = {"probabilities": "softmax_tensor"}
-  logging_hook = tf.train.LoggingTensorHook(tensors=tensors_to_log, every_n_iter=50)
-
-  # Train the model
-  train_data = train_data.astype(np.float32)
-  print(train_data.dtype)
-
-  # TensorFlow Train Function
-  train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
-
-  output_str=""
-  epochs=1
-  iterations=1
-
-  model_list=["cnn_model4_OS_PosNeg50:50_TrainTest70:30"]*int((len(eval_labels)/2))
-  tps_fps_df=pd.DataFrame(model_list,columns=['Model'])
-  for steps in range(iterations):
-
-    # Classifier
-    nodet_classifier.train(input_fn=train_input_fn,steps=epochs,hooks=[logging_hook])
-    eval_data = eval_data.astype(np.float32)
-
-    # Test the classifier and print results
-    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-      x={"x": eval_data},
-      y=eval_labels,
-      num_epochs=1,
-      shuffle=False)
-
-    test_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-    print(test_results)
-
-    pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
-
-    preds = getClasses(pred)
-    # print(test_filenames)
-    # print(len(test_filenames))
+  # # eval_data = load_data(1)
+  # # eval_labels = load_labels(1)
 
 
-    tps,fps,tns,fns=getPreds(test_filenames,eval_labels,preds)
-    print("True positives are ",len(tps))
-    print("False positives are ",len(fps))
-    print("False negatives are ",len(fns))
-    print("True negatives are ",len(tns))
 
-    current_epoch=(steps+1)*epochs
-    tps_fps_df['tps_'+str(current_epoch)]=pd.Series(tps)
-    tps_fps_df['fps_'+str(current_epoch)]=pd.Series(fps)
-    tps_fps_df['tns_'+str(current_epoch)]=pd.Series(tns)
-    tps_fps_df['fns_'+str(current_epoch)]=pd.Series(fns)
+  # # Create the Estimator
+  # nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models/cnn_model4_OS_PosNeg50:50_TrainTest70:30")
 
-    # tps_fps_df=pd.DataFrame.from_dict({'Model':model_list,'tps_800':tps,'fps_800':fps},orient='index')
-    # df=tps_fps_df.transpose()
-    # df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
-    # columns_list=['model','tps_'+str(200),'fps_'+str(200)]
-    # tps_fps_df=pd.DataFrame(np.column_stack([model_list,tps,fps]),columns=columns_list)
-    # tps_fps_df.describe()
-    confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
+  # # Set up logging for predictions
+  # tensors_to_log = {"probabilities": "softmax_tensor"}
+  # logging_hook = tf.train.LoggingTensorHook(tensors=tensors_to_log, every_n_iter=50)
 
-    with tf.Session():
-      confusion = tf.Tensor.eval(confusion)
-      print("Confusion: ",confusion)
-      tn = confusion[0][0]
-      fp = confusion[0][1]
-      fn = confusion[1][0]
-      tp = confusion[1][1]
-      tpr = tp/(tp+fn)
-      fpr = fp/(tn+fp)
+  # # Train the model
+  # train_data = train_data.astype(np.float32)
+  # print(train_data.dtype)
 
-    eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-      x={"x": train_data},
-      y=train_labels,
-      num_epochs=1,
-      shuffle=False)
+  # # TensorFlow Train Function
+  # train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": train_data},y=train_labels,batch_size=32,num_epochs=None,shuffle=True)
 
-    train_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
-    print(train_results)
-    print("No of positive examples in training is ",positive)
-    print("No of negative examples in training is ",negative)
+  # output_str=""
+  # epochs=1
+  # iterations=1
 
-    output_str= "\n"+output_str+"train acc: "+str(train_results['accuracy'])+" test acc: "+str(test_results['accuracy'])+"\n"
-    output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
+  # model_list=["cnn_model4_OS_PosNeg50:50_TrainTest70:30"]*int((len(eval_labels)/2))
+  # tps_fps_df=pd.DataFrame(model_list,columns=['Model'])
+  # for steps in range(iterations):
 
-  print(output_str)
-  tps_fps_df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+  #   # Classifier
+  #   nodet_classifier.train(input_fn=train_input_fn,steps=epochs,hooks=[logging_hook])
+  #   eval_data = eval_data.astype(np.float32)
 
+  #   # Test the classifier and print results
+  #   eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+  #     x={"x": eval_data},
+  #     y=eval_labels,
+  #     num_epochs=1,
+  #     shuffle=False)
+
+  #   test_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+  #   print(test_results)
+
+  #   pred = list(nodet_classifier.predict(input_fn=eval_input_fn))
+
+  #   preds = getClasses(pred)
+  #   # print(test_filenames)
+  #   # print(len(test_filenames))
+
+
+  #   tps,fps,tns,fns=getPreds(test_filenames,eval_labels,preds)
+  #   print("True positives are ",len(tps))
+  #   print("False positives are ",len(fps))
+  #   print("False negatives are ",len(fns))
+  #   print("True negatives are ",len(tns))
+
+  #   current_epoch=(steps+1)*epochs
+  #   tps_fps_df['tps_'+str(current_epoch)]=pd.Series(tps)
+  #   tps_fps_df['fps_'+str(current_epoch)]=pd.Series(fps)
+  #   tps_fps_df['tns_'+str(current_epoch)]=pd.Series(tns)
+  #   tps_fps_df['fns_'+str(current_epoch)]=pd.Series(fns)
+
+  #   # tps_fps_df=pd.DataFrame.from_dict({'Model':model_list,'tps_800':tps,'fps_800':fps},orient='index')
+  #   # df=tps_fps_df.transpose()
+  #   # df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+  #   # columns_list=['model','tps_'+str(200),'fps_'+str(200)]
+  #   # tps_fps_df=pd.DataFrame(np.column_stack([model_list,tps,fps]),columns=columns_list)
+  #   # tps_fps_df.describe()
+  #   confusion = tf.confusion_matrix(labels=tf.convert_to_tensor(eval_labels), predictions=tf.convert_to_tensor(preds), num_classes=2)
+
+  #   with tf.Session():
+  #     confusion = tf.Tensor.eval(confusion)
+  #     print("Confusion: ",confusion)
+  #     tn = confusion[0][0]
+  #     fp = confusion[0][1]
+  #     fn = confusion[1][0]
+  #     tp = confusion[1][1]
+  #     tpr = tp/(tp+fn)
+  #     fpr = fp/(tn+fp)
+
+  #   eval_input_fn = tf.estimator.inputs.numpy_input_fn(
+  #     x={"x": train_data},
+  #     y=train_labels,
+  #     num_epochs=1,
+  #     shuffle=False)
+
+  #   train_results = nodet_classifier.evaluate(input_fn=eval_input_fn)
+  #   print(train_results)
+  #   print("No of positive examples in training is ",positive)
+  #   print("No of negative examples in training is ",negative)
+
+  #   output_str= "\n"+output_str+"train acc: "+str(train_results['accuracy'])+" test acc: "+str(test_results['accuracy'])+"\n"
+  #   output_str = output_str+"TPR: "+str(round(tpr,4))+" "+"FPR: "+str(round(fpr,4))+" for epochs: "+str(test_results['global_step'])+"\n\n"
+
+  # print(output_str)
+  # tps_fps_df.to_csv('../../../tps&fps/'+model_list[0]+'.csv')
+  savePreds('../../../tps&fps/cnn_model4_OS_PosNeg50:50_TrainTest70:30.csv','cnn_model4_OS_PosNeg50:50_TrainTest70:30')
 # Run the TF App once the main function is called
 if __name__ == "__main__":
   tf.app.run()
