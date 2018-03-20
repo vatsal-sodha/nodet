@@ -2,6 +2,11 @@
 #Author: Mohith Damarapati
 #Guide: Dr. Mukesh A Zaveri, SVNIT
 
+# train acc: 0.9802208 test acc: 0.84074074
+# TPR: 0.8741 FPR: 0.1926 for epochs: 2000       Model 5
+
+
+
 #CONV NET MODEL
 
 '''The below code trains and tests a CNN Model'''
@@ -27,7 +32,7 @@ def cnn_model_fn(features, labels, mode):
   input_layer = tf.reshape(features["x"], [-1, 64, 64, 1])
 
   # Convolutional Layer #1
-  conv1 = tf.layers.conv2d(inputs=input_layer,filters=64,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
+  conv1 = tf.layers.conv2d(inputs=input_layer,filters=64,kernel_size=[7, 7],padding="same",activation=tf.nn.relu)
 
   # Pooling Layer #1
   pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
@@ -42,20 +47,26 @@ def cnn_model_fn(features, labels, mode):
   dropout1 = tf.layers.dropout(inputs=conv2, rate=0.2, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Convolutional Layer #2
-  conv3 = tf.layers.conv2d(inputs=dropout1,filters=32,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
+  conv3 = tf.layers.conv2d(inputs=dropout1,filters=64,kernel_size=[5, 5],padding="same",activation=tf.nn.relu)
   # Pooling Layer #2
   pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)
   # Convolutional Layer #4
-  dropout2 = tf.layers.dropout(inputs=pool3, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
 
-  conv4 = tf.layers.conv2d(inputs=dropout2,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  conv4 = tf.layers.conv2d(inputs=pool3,filters=64,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+  dropout2 = tf.layers.dropout(inputs=conv4, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+
+  conv5 = tf.layers.conv2d(inputs=dropout2,filters=128,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
+
+  pool4 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)
+
+  conv6 = tf.layers.conv2d(inputs=pool4,filters=256,kernel_size=[3, 3],padding="same",activation=tf.nn.relu)
 
   # Dense Layer
-  pool3_flat = tf.reshape(conv4, [-1, 16 * 16 * 64])
+  pool3_flat = tf.reshape(conv6, [-1, 8 * 8 * 256])
   dense = tf.layers.dense(inputs=pool3_flat, units=1024, activation=tf.nn.relu)
 
   # DropOut - To reduce Over Fitting of the data
-  dropout = tf.layers.dropout(inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
+  dropout = tf.layers.dropout(inputs=dense, rate=0.5, training=mode == tf.estimator.ModeKeys.TRAIN)
 
   # Final Layer - 2 Units - For nodules and non-nodules
   logits = tf.layers.dense(inputs=dropout, units=2)
@@ -92,7 +103,7 @@ def cnn_model_fn(features, labels, mode):
 
 #Loading the Train and Test data that are prepared by me in the data_prep.py
 def load_sampled_data_(j):
-  trainExamples=100
+  trainExamples=10000
   testExamples=270
   if j==0:
     iterations=trainExamples
@@ -226,7 +237,7 @@ def main(unused_argv):
 
 
   # Create the Estimator
-  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models2/testing")
+  nodet_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="./../../../Models5/cnn_model5_OSPosNeg50:50_TrainTest80:20")
 
   # Set up logging for predictions
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -241,7 +252,7 @@ def main(unused_argv):
 
   output_str=""
   epochs=100
-  iterations=1
+  iterations=19
 
   # model_list=["cnn_model4_OS_PosNeg50:50_TrainTest70:30"]*int((len(eval_labels)/2))
   # tps_fps_df=pd.DataFrame(model_list,columns=['Model'])

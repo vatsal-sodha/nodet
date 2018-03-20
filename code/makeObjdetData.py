@@ -16,7 +16,7 @@ df = pd.read_csv('../data/nodules.csv')
 total = len(df)
 print("Length")
 print(total)
-print(df['FileName'])
+print(df['filename'])
 print("After Shuffling")
 print(df)
 
@@ -36,7 +36,7 @@ directory_train='../data/ObjdetDataSet/train/'
 if not os.path.exists(directory_train):
 	os.makedirs(directory_train)
 
-for i in df_train['FileName']:
+for i in df_train['filename']:
 	im = Image.open('../data/Nodules/'+i)
 	copyfile('../data/Nodules/'+i, directory_train + i)
 
@@ -44,9 +44,9 @@ directory_test='../data/ObjdetDataSet/test/'
 if not os.path.exists(directory_test):
 	os.makedirs(directory_test)
 
-for i in df_test['FileName']:
+for i in df_test['filename']:
 	im = Image.open('../data/Nodules/'+i)
 	copyfile('../data/Nodules/'+i, directory_test + i)
 
-df_train.to_csv('../data/ObjdetDataSet/train.csv', sep='\t')
-df_test.to_csv('../data/ObjdetDataSet/test.csv', sep='\t')
+df_train.to_csv('../data/ObjdetDataSet/train.csv',index=False)
+df_test.to_csv('../data/ObjdetDataSet/test.csv'	,index=False)

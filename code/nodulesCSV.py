@@ -14,7 +14,7 @@ output_dir = "../data/nodules.csv"
 
 nodule_images = []
 classname = []
-labels = ['FileName','Width','Height','Class','Xmin','Ymin','Xmax','Ymax']
+labels = ['index','filename','width','height','class','xmin','ymin','xmax','ymax']
 
 for img_file in file_list:
 	#print(img_file)
@@ -81,8 +81,8 @@ print(Xmax)
 
 frames = [nodule_images,width,width,classname,Xmin,Ymin,Xmax,Ymax]
 
-df_final = pd.DataFrame({'FileName' : nodule_images, 'Width' : width , 'Height' : width, 'Class':classname,'Xmin': Xmin, 'Ymin' : Ymin, 'Xmax' : Xmax, 'Ymax' : Ymax})
+df_final = pd.DataFrame({'filename' : nodule_images, 'width' : width , 'height' : width, 'class':classname,'xmin': Xmin, 'ymin' : Ymin, 'xmax' : Xmax, 'ymax' : Ymax})
 
 print(df_final)
 
-df_final.to_csv(output_dir, sep='\t')
+df_final.to_csv(output_dir,index=False)
