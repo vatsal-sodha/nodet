@@ -14,7 +14,7 @@ from scipy import ndimage
 from skimage import filters
 import matplotlib.pyplot as plt
 
-
+from random import randint
 
 def normalising0to1(img):
     range1=np.max(img)-np.min(img)
@@ -34,6 +34,28 @@ def dilation(img):
     img=morphology.dilation(img)
     return img
 
+def OTSUsegmentation(img):
+    thresh=filters.threshold_otsu(img)
+    otsu=img>thresh
+    otsu=morphology.erosion(otsu,np.ones([6,6]))
+    otsu=morphology.dilation(otsu)
+    return otsu
+
+def minimumSegmentation(img):
+    thresh=filters.threshold_minimum(img)
+    minimum=img>thresh
+    minimum=morphology.dilation(minimum)
+    minimum=morphology.erosion(minimum,np.ones([4,4]))
+    return minimum
+
+def cropImage(img):
+    width, height = img.shape
+    cropx=50
+    cropy=50
+
+    temp=img[50:height-50,50:width-50]
+    return temp
+
 
 
 file_list = glob("../data/Nodules/" + "*.jpg")
@@ -41,7 +63,8 @@ file_list = glob("../data/Nodules/" + "*.jpg")
 
 output_dir = "../data/Nodules_preProcessed_1/"
 img_id = 0
-for img_file in file_list[1:2]:
+temp=randint(0,525)
+for img_file in file_list[temp:temp+10]:
 
     img=Image.open(img_file)
     plt.subplot(3,3,1)
@@ -75,6 +98,18 @@ for img_file in file_list[1:2]:
     plt.subplot(3,3,7)
     plt.title("After dilation ")
     plt.imshow(dilated,cmap="gray")
+
+    minimum=minimumSegmentation(medfilt)
+    print(minimum.shape)
+    plt.subplot(3,3,8)
+    plt.title("After minimum segmentation")
+    plt.imshow(minimum,cmap="gray")
+
+    cropedImage=cropImage(minimum)
+    print(cropedImage.shape)
+    plt.subplot(3,3,9)
+    plt.title("After Cropping")
+    plt.imshow(cropedImage,cmap="gray")
 
     plt.show()
 
