@@ -34,7 +34,7 @@ def class_text_to_int(row_label):
 
 
 def split(df, group):
-    data = namedtuple('data', ['filename', 'object'])
+    data = namedtuple('data', ['FileName', 'object'])
     gb = df.groupby(group)
     return [data(filename, gb.get_group(x)) for filename, x in zip(gb.groups.keys(), gb.groups)]
 
@@ -56,24 +56,24 @@ def create_tf_example(group, path):
     classes = []
 
     for index, row in group.object.iterrows():
-        xmins.append(row['xmin'] / width)
-        xmaxs.append(row['xmax'] / width)
-        ymins.append(row['ymin'] / height)
-        ymaxs.append(row['ymax'] / height)
+        xmins.append(row['Xmin'] / width)
+        xmaxs.append(row['Xmax'] / width)
+        ymins.append(row['Ymin'] / height)
+        ymaxs.append(row['Ymax'] / height)
         classes_text.append(row['class'].encode('utf8'))
-        classes.append(class_text_to_int(row['class']))
+        classes.append(class_text_to_int(row['Class']))
 
     tf_example = tf.train.Example(features=tf.train.Features(feature={
-        'image/height': dataset_util.int64_feature(height),
-        'image/width': dataset_util.int64_feature(width),
-        'image/filename': dataset_util.bytes_feature(filename),
+        'image/Height': dataset_util.int64_feature(height),
+        'image/Width': dataset_util.int64_feature(width),
+        'image/FileName': dataset_util.bytes_feature(filename),
         'image/source_id': dataset_util.bytes_feature(filename),
         'image/encoded': dataset_util.bytes_feature(encoded_jpg),
         'image/format': dataset_util.bytes_feature(image_format),
-        'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
-        'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
-        'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
-        'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
+        'image/object/bbox/Xmin': dataset_util.float_list_feature(xmins),
+        'image/object/bbox/Xmax': dataset_util.float_list_feature(xmaxs),
+        'image/object/bbox/Ymin': dataset_util.float_list_feature(ymins),
+        'image/object/bbox/Ymax': dataset_util.float_list_feature(ymaxs),
         'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
         'image/object/class/label': dataset_util.int64_list_feature(classes),
     }))
@@ -84,7 +84,7 @@ def main(_):
     writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
     path = os.path.join(os.getcwd(), 'images')
     examples = pd.read_csv(FLAGS.csv_input)
-    grouped = split(examples, 'filename')
+    grouped = split(examples, 'FileName')
     for group in grouped:
         tf_example = create_tf_example(group, path)
         writer.write(tf_example.SerializeToString())
