@@ -53,7 +53,7 @@ def cropImage(img):
     cropx=50
     cropy=50
 
-    temp=img[50:height-50,50:width-50]
+    temp=img[cropy:height-cropy,cropx:width-cropx]
     return temp
 
 
@@ -61,58 +61,60 @@ def cropImage(img):
 file_list = glob("../data/Nodules/" + "*.jpg")
 
 
-output_dir = "../data/Nodules_preProcessed_1/"
+output_dir = "../data/nodules_preProcessed_1/"
 img_id = 0
-temp=randint(0,525)
-for img_file in file_list[temp:temp+10]:
+# temp=randint(0,525)
+for img_file in file_list:
 
     img=Image.open(img_file)
-    plt.subplot(3,3,1)
-    plt.title("Original Image")
-    plt.imshow(img,cmap="gray")
+    # plt.subplot(3,3,1)
+    # plt.title("Original Image")
+    # plt.imshow(img,cmap="gray")
 
     img=normalising0to1(img)
-    plt.subplot(3,3,2)
-    plt.title("Normalised image")
-    plt.imshow(img,cmap="gray")
+    # plt.subplot(3,3,2)
+    # plt.title("Normalised image")
+    # plt.imshow(img,cmap="gray")
 
-    plt.subplot(3,3,3)
-    plotHistogram(img)
-    plt.title("Original Image")
+    # plt.subplot(3,3,3)
+    # plotHistogram(img)
+    # plt.title("Original Image")
 
     eq=equalize_hist(img)
-    plt.subplot(3,3,4)
-    plt.title("Histogram equlised image")
-    plt.imshow(eq,cmap="gray")
+    # plt.subplot(3,3,4)
+    # plt.title("Histogram equlised image")
+    # plt.imshow(eq,cmap="gray")
 
-    plt.subplot(3,3,5)
-    plotHistogram(eq)
-    plt.title("After equalisation")
+    # plt.subplot(3,3,5)
+    # plotHistogram(eq)
+    # plt.title("After equalisation")
 
     medfilt=medianFilter(eq)
-    plt.subplot(3,3,6)
-    plt.title("After median filter")
-    plt.imshow(medfilt,cmap="gray")
+    # plt.subplot(3,3,6)
+    # plt.title("After median filter")
+    # plt.imshow(medfilt,cmap="gray")
 
     dilated=dilation(medfilt)
-    plt.subplot(3,3,7)
-    plt.title("After dilation ")
-    plt.imshow(dilated,cmap="gray")
+    # plt.subplot(3,3,7)
+    # plt.title("After dilation ")
+    # plt.imshow(dilated,cmap="gray")
 
-    minimum=minimumSegmentation(medfilt)
-    print(minimum.shape)
-    plt.subplot(3,3,8)
-    plt.title("After minimum segmentation")
-    plt.imshow(minimum,cmap="gray")
+    # minimum=minimumSegmentation(medfilt)
+    # print(minimum.shape)
+    # plt.subplot(3,3,8)
+    # plt.title("After minimum segmentation")
+    # plt.imshow(minimum,cmap="gray")
 
-    cropedImage=cropImage(minimum)
+    cropedImage=cropImage(dilated)
     print(cropedImage.shape)
-    plt.subplot(3,3,9)
-    plt.title("After Cropping")
-    plt.imshow(cropedImage,cmap="gray")
+    # plt.subplot(3,3,9)
+    # plt.title("After Cropping")
+    # plt.imshow(cropedImage,cmap="gray")
 
-    plt.show()
-
-            # io.imsave(output_dir+subset_number+"_"+str(img_id)+".jpg", nodule_slice)
+    # plt.show()
+    print(img_file)
+    # print(output_dir+img_file)
+    filename=img_file.split("/")[3]
+    io.imsave(output_dir+filename, cropedImage)
             # img_id+=1
 
