@@ -7,20 +7,21 @@ import csv
 from glob import glob
 import pandas as pd
 
-file_list = sorted(glob("../data/Nodules/" + "*.jpg"))
+file_list = sorted(glob("../data/nodules_preProcessed1/" + "*.jpg"))
 df = pd.read_csv('../data/WorldToVoxel.csv')
 
-output_dir = "../data/nodules.csv"
+output_dir = "../data/nodules_preProcessed1.csv"
 
 nodule_images = []
 classname = []
 labels = ['index','filename','width','height','class','xmin','ymin','xmax','ymax']
 
-for img_file in file_list:
-	#print(img_file)
-	#nodule_images.append(img_file)
-	classname.append("nodule")
 
+# for img_file in file_list:
+# 	#print(img_file)
+# 	# print(classname)
+# 	#nodule_images.append(img_file)
+# 	classname.append("nodule")
 
 for i in range(0,10):
 	if i==0:
@@ -52,32 +53,32 @@ for i in range(0,10):
 			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
 
 print(len(nodule_images))
-
+offset=50 #depencing on cropping
 radius = (df['Diam']/2)
 radius = radius.values.tolist()
 print("radius")
-print(radius)
+print(len(radius))
 
 width = df['Diam']
 width = width.values.tolist()
 print("width:")
-print(width)
+print(len(width))
 
-Xmin = df['Voxel-X'] - radius
+Xmin = df['Voxel-X'] - radius - offset
 Xmin = Xmin.values.tolist()
-Ymin = df['Voxel-Y'] - radius
+Ymin = df['Voxel-Y'] - radius - offset
 Ymin = Ymin.values.tolist()
 
-Xmax = df['Voxel-X'] + radius
+Xmax = df['Voxel-X'] + radius - offset
 Xmax = Xmax.values.tolist()
-Ymax = df['Voxel-Y'] + radius
+Ymax = df['Voxel-Y'] + radius - offset
 Ymax = Ymax.values.tolist()
 
 print("Xmin:")
-print(Xmin)
-
+print(len(Xmin))
+classname = ["nodule"]*len(nodule_images)
 print("Xmax:")
-print(Xmax)
+print(len(classname))
 
 frames = [nodule_images,width,width,classname,Xmin,Ymin,Xmax,Ymax]
 
