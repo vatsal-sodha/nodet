@@ -89,7 +89,7 @@ def normalisingMaskedImage(img,mask):
 	return img
 file_list = glob("../data/Nodules/" + "*.jpg")
 
-output_dir = "../data/Lungs/"
+output_dir = "../data/Lungs_without_resizing/"
 temp=randint(0,525)
 
 for img_file in file_list:
@@ -139,57 +139,62 @@ for img_file in file_list:
 
     img=mask*img
     img=normalisingMaskedImage(img,mask)
+    # mean = np.mean(img)
+    # img = img - mean
+    # min = np.min(img)
+    # max = np.max(img)
+    # img = img/(max-min)
     # plt.subplot(2,2,4)
     # plt.title("After masked image normalisation")
     # plt.imshow(img,cmap="gray")
 
     #make image bounding box  (min row, min col, max row, max col)
-    labels = measure.label(mask)
-    regions = measure.regionprops(labels)
-        #
-        # Finding the global min and max row over all regions
-        #
-    min_row = 512
-    max_row = 0
-    min_col = 512
-    max_col = 0
-    for prop in regions:
-        B = prop.bbox
-        if min_row > B[0]:
-        	min_row = B[0]
-        if min_col > B[1]:
-            min_col = B[1]
-        if max_row < B[2]:
-            max_row = B[2]
-        if max_col < B[3]:
-            max_col = B[3]
-    width = max_col-min_col
-    height = max_row - min_row
-    if width > height:
-    	max_row=min_row+width
-    else:
-        max_col = min_col+height
-        # 
-        # cropping the image down to the bounding box for all regions
-        # (there's probably an skimage command that can do this in one line)
-        # 
-    img = img[min_row:max_row,min_col:max_col]
-    mask =  mask[min_row:max_row,min_col:max_col]
-    if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
-        pass
-    else:
-            # moving range to -1 to 1 to accomodate the resize function
-        mean = np.mean(img)
-        img = img - mean
-        min = np.min(img)
-        max = np.max(img)
-        img = img/(max-min)
-        new_img = resize(img,[512,512])
+    # labels = measure.label(mask)
+    # regions = measure.regionprops(labels)
+    #     #
+    #     # Finding the global min and max row over all regions
+    #     #
+    # min_row = 512
+    # max_row = 0
+    # min_col = 512
+    # max_col = 0
+    # for prop in regions:
+    #     B = prop.bbox
+    #     if min_row > B[0]:
+    #     	min_row = B[0]
+    #     if min_col > B[1]:
+    #         min_col = B[1]
+    #     if max_row < B[2]:
+    #         max_row = B[2]
+    #     if max_col < B[3]:
+    #         max_col = B[3]
+    # width = max_col-min_col
+    # height = max_row - min_row
+    # if width > height:
+    # 	max_row=min_row+width
+    # else:
+    #     max_col = min_col+height
+    #     # 
+    #     # cropping the image down to the bounding box for all regions
+    #     # (there's probably an skimage command that can do this in one line)
+    #     # 
+    # img = img[min_row:max_row,min_col:max_col]
+    # mask =  mask[min_row:max_row,min_col:max_col]
+    # if max_row-min_row <5 or max_col-min_col<5:  # skipping all images with no god regions
+    #     pass
+    # else:
+    #         # moving range to -1 to 1 to accomodate the resize function
+    #     mean = np.mean(img)
+    #     img = img - mean
+    #     min = np.min(img)
+    #     max = np.max(img)
+    #     img = img/(max-min)
+    #     new_img = resize(img,[512,512])
     # plt.subplot(2,2,4)
     # plt.title("After resizing")
     # plt.imshow(new_img,cmap="gray")    
     # plt.show()
     filename=img_file.split("/")[3]
-    # print(filename)
-    io.imsave(output_dir+filename, new_img)
+    print(filename)
+    io.imsave(output_dir+filename, img)
     
