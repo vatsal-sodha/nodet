@@ -7,10 +7,10 @@ import csv
 from glob import glob
 import pandas as pd
 
-file_list = sorted(glob("../data/nodules_preProcessed1/" + "*.jpg"))
+file_list = sorted(glob("../data/Lungs_without_resizing/" + "*.jpg"))
 df = pd.read_csv('../data/WorldToVoxel.csv')
 
-output_dir = "../data/nodules_preProcessed1.csv"
+output_dir = "../data/nodules_preProcessed2.csv"
 
 nodule_images = []
 classname = []
@@ -64,14 +64,14 @@ width = width.values.tolist()
 print("width:")
 print(len(width))
 
-Xmin = df['Voxel-X'] - radius - offset
+Xmin = df['Voxel-X'] - radius
 Xmin = Xmin.values.tolist()
-Ymin = df['Voxel-Y'] - radius - offset
+Ymin = df['Voxel-Y'] - radius
 Ymin = Ymin.values.tolist()
 
-Xmax = df['Voxel-X'] + radius - offset
+Xmax = df['Voxel-X'] + radius
 Xmax = Xmax.values.tolist()
-Ymax = df['Voxel-Y'] + radius - offset
+Ymax = df['Voxel-Y'] + radius
 Ymax = Ymax.values.tolist()
 
 print("Xmin:")
