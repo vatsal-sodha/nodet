@@ -46,7 +46,7 @@ def writeToCSV(folder_path, featuresFileName):
 # makeCsvHeader()
 for x in os.listdir("../data/OSDataSets"):
 	print("x: ",x)
-	writeToCSV(featuresFileName+x+"/", "../data/OSFeaturesDataSets/"+x+".csv")
+	writeToCSV(featuresFileName+x+"/", "../data/OS_WithWalls_FeaturesDataSets/"+x+".csv")
 
 #for appending 2 csv files command
 #cat Train_0.8_Neg_0.5_Data.csv <(tail +2 Test_0.8_Neg_0.5_Data.csv) > Pos_0.5_Neg_0.5_Data.csv	

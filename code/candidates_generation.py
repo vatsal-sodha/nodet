@@ -9,7 +9,7 @@ from glob import glob
 import pandas as pd
 import matplotlib
 
-subset_number = 0
+subset_number = 6
 subset_number = "subset"+str(subset_number)
 
 file_list = glob("../data/"+subset_number+"/" + "*.mhd")

@@ -116,44 +116,44 @@ def getRegionMetricRow(fname):
 			if region.area>= 0.9*64*64:
 				break
 			
-			if B[0] == 0 or B[1] == 0 or B[2] == 64 or B[3]==64:
+		# 	if B[0] == 0 or B[1] == 0 or B[2] == 64 or B[3]==64:
 
-				#if B[0] == 0 and B[1] == 0 and B[2] == 64 and B[3]==64:
-					#break				
-				mask = np.where(labels == region.label, 1, 0)
-				segmented_region = original * mask
-				segmented_region_bw = np.where(segmented_region==0,1,0)
-				km=morphology.erosion(segmented_region_bw,np.ones([3,3]))
-				#img_fill_holes = ndimage.binary_fill_holes(km)
-				chull=convex_hull_image(km)
-				chull=morphology.erosion(chull,np.ones([3,3]))
-				#plt.title("convex hull")
-				#plt.imshow(chull,cmap="gray")
-				#plt.show()
+		# 		#if B[0] == 0 and B[1] == 0 and B[2] == 64 and B[3]==64:
+		# 			#break				
+		# 		mask = np.where(labels == region.label, 1, 0)
+		# 		segmented_region = original * mask
+		# 		segmented_region_bw = np.where(segmented_region==0,1,0)
+		# 		km=morphology.erosion(segmented_region_bw,np.ones([3,3]))
+		# 		#img_fill_holes = ndimage.binary_fill_holes(km)
+		# 		chull=convex_hull_image(km)
+		# 		chull=morphology.erosion(chull,np.ones([3,3]))
+		# 		#plt.title("convex hull")
+		# 		#plt.imshow(chull,cmap="gray")
+		# 		#plt.show()
 
-				seg_nodule = segmented_region * chull
-				seg_nodule = morphology.dilation(seg_nodule, np.ones([2,2]))
-				#plt.title("segmented nodule")
-				#plt.imshow(seg_nodule,cmap="gray")
-				#plt.show()
+		# 		seg_nodule = segmented_region * chull
+		# 		seg_nodule = morphology.dilation(seg_nodule, np.ones([2,2]))
+		# 		#plt.title("segmented nodule")
+		# 		#plt.imshow(seg_nodule,cmap="gray")
+		# 		#plt.show()
 
-				threshold = 0.44
+		# 		threshold = 0.44
 
-				labeled, nr_objects = ndimage.label(seg_nodule > threshold)
-				new_regions = measure.regionprops(labeled)
+		# 		labeled, nr_objects = ndimage.label(seg_nodule > threshold)
+		# 		new_regions = measure.regionprops(labeled)
 
-				if nr_objects == 0:
-					break
-				max_area=0
-				for new_region in new_regions:
-					if new_region.area >= max_area:
-						nodule_region = new_region
-				break
+		# 		if nr_objects == 0:
+		# 			break
+		# 		max_area=0
+		# 		for new_region in new_regions:
+		# 			if new_region.area >= max_area:
+		# 				nodule_region = new_region
+		# 		break
 
 			nodule_region = region
 			newB = nodule_region.bbox
-			# if newB[0] == 0 or newB[1] == 0 or newB[2] == 64 or newB[3]==64:
-			# 	break
+		 	# if newB[0] == 0 or newB[1] == 0 or newB[2] == 64 or newB[3]==64:
+		# 	# 	break
 			break
 
 		else:
