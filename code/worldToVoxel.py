@@ -7,7 +7,8 @@ import csv
 from glob import glob
 import pandas as pd
 
-file_list = glob("../data/subset0/" + "*.mhd")
+
+file_list = glob("../data/subset6/" + "*.mhd")
 
 
 def get_filename(case):
@@ -25,25 +26,25 @@ nodules=[]
 labels = ['FileName', 'World-X', 'World-Y', 'World-Z', 'Diam', 'Voxel-X', 'Voxel-Y' , 'Voxel-Z']
 
 for img_file in file_list:
-
-
-    mini_df = df_node[df_node["file"]==img_file] #get all nodules associate with file
-    if len(mini_df)>0:       # some files may not have a nodule--skipping those 
-        biggest_node = np.argsort(mini_df["diameter_mm"].values)[-1]   # just using the biggest node
-
     print(img_file)
 
+    mini_df = df_node[df_node["file"]==img_file] #get all nodules associate with file
 
-mini_df = df_node[df_node["file"]==img_file] #get all nodules associate with file
-if len(mini_df)>0:
-	biggest_node = np.argsort(mini_df["diameter_mm"].values)[-1]   # just using the biggest node
-
+    if len(mini_df)>0:
+        biggest_node = np.argsort(mini_df["diameter_mm"].values)[-1]   # just using the biggest node
 
 
         node_x = mini_df["coordX"].values[biggest_node]
         node_y = mini_df["coordY"].values[biggest_node]
         node_z = mini_df["coordZ"].values[biggest_node]
         diam = mini_df["diameter_mm"].values[biggest_node]
+
+
+        print(node_x)
+        print(node_y)
+        print(node_z)
+        print(diam)
+
 
         itk_img=sitk.ReadImage(img_file)
         img_array=sitk.GetArrayFromImage(itk_img)
@@ -54,9 +55,13 @@ if len(mini_df)>0:
         v_center =np.rint((center-origin)/spacing)  # nodule center in voxel space (still x,y,z ordering)
 
 
+        print(v_center[0])
+        print(v_center[1])
+        print(v_center[2])
+
         nodules.append((img_file,node_x,node_y,node_z,diam,v_center[0],v_center[1],v_center[2]))
 
 df = pd.DataFrame.from_records(nodules, columns=labels)
-	    
-df.to_csv("../data/WorldToVoxel_annotations.csv", sep=',', encoding='utf-8')
-
+        
+with open('../data/WorldToVoxel.csv', 'a') as f:
+    df.to_csv(f, sep=',', encoding='utf-8')
