@@ -8,7 +8,7 @@ from glob import glob
 import pandas as pd
 
 
-file_list = glob("../../../project/subset9/" + "*.mhd")
+file_list = glob("../../../subset6/" + "*.mhd")
 
 
 def get_filename(case):
@@ -62,9 +62,8 @@ for img_file in file_list:
         nodules.append((img_file,node_x,node_y,node_z,diam,v_center[0],v_center[1],v_center[2]))
 
 df = pd.DataFrame.from_records(nodules, columns=labels)
-	    
+
 with open('../data/WorldToVoxel.csv', 'a') as f:
     df.to_csv(f, sep='\t', encoding='utf-8')
 
 
-	    

@@ -9,8 +9,8 @@ import pandas as pd
 
 file_list = sorted(glob("../data/Lungs_without_resizing/" + "*.jpg"))
 df = pd.read_csv('../data/WorldToVoxel.csv')
-
-output_dir = "../data/nodules_preProcessed2.csv"
+print(df.head())
+output_dir = "../data/nodules_preProcessed5.csv"
 
 nodule_images = []
 classname = []
@@ -41,6 +41,9 @@ for i in range(0,10):
 			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
 	if i==5:
 		for j in range(0,54):
+			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
+	if i==6:
+		for j in range(0,63):
 			nodule_images.append("subset"+str(i)+"_"+str(j)+".jpg")
 	if i==7:
 		for j in range(0,54):
@@ -86,4 +89,4 @@ df_final = pd.DataFrame({'filename' : nodule_images, 'width' : width , 'height' 
 
 print(df_final)
 
-df_final.to_csv(output_dir,index=False)
+# df_final.to_csv(output_dir,index=False)
